@@ -871,70 +871,15 @@ export function DashboardWidgetScreen() {
 // src/components/clinic/WebsiteEditor.tsx, wired to the already-working
 // /api/website/save, /publish, and /upload-image routes.
 
-export function DashboardServicesScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Services</SectionEyebrow>}
-        title="Clinic services map directly to the booking flow"
-        description="Services define the slot length, price, color, and assistant instructions Clara uses during the conversation."
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
-        <div className="grid gap-4 md:grid-cols-2">
-          {services.map((service) => (
-            <SurfaceCard key={service.name} className="p-5">
-              <div className="flex items-center justify-between gap-3">
-                <StatusBadge tone={service.tone}>Active</StatusBadge>
-                <Pill tone={service.tone}>{service.duration}</Pill>
-              </div>
-              <h3 className="mt-4 text-lg font-black tracking-tight text-[var(--text-strong)]">{service.name}</h3>
-              <div className="mt-2 text-sm text-[var(--text-muted)]">Price: {service.price}</div>
-              <div className="mt-4 flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                Included in widget and portal booking flow
-              </div>
-            </SurfaceCard>
-          ))}
-        </div>
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Add service</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Quick create panel</h2>
-            </div>
-            <ButtonLink href="/dashboard/services" icon="none">
-              Create service
-            </ButtonLink>
-          </div>
-          <div className="mt-6 space-y-4 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-[var(--text-strong)]">Service name</div>
-              <div className="h-11 rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">General Consultation</div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <div className="text-sm font-semibold text-[var(--text-strong)]">Duration</div>
-                <div className="h-11 rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">30 minutes</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-sm font-semibold text-[var(--text-strong)]">Price</div>
-                <div className="h-11 rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">$90</div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-[var(--text-strong)]">Instructions</div>
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">
-                Ask patients to arrive 15 minutes early and bring previous medical records.
-              </div>
-            </div>
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardServicesScreen was removed from here — same story as the other
+// screens already replaced: `services` was a hardcoded local array (see the
+// `const services = [...]` above), the "Quick create panel" fields were
+// plain <div>s (not <input>s), and "Create service" was a link to this same
+// page, not a submit handler. A real version now lives in
+// src/components/clinic/ServicesManager.tsx, wired directly to
+// services/services.ts's createClinicService/deleteClinicService/
+// setClinicServiceActive via the browser Supabase client (RLS-protected,
+// no dedicated API route needed for this one).
 
 export function DashboardPatientsScreen() {
   return (
