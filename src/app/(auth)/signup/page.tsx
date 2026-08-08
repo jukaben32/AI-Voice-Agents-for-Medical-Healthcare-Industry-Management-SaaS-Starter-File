@@ -39,7 +39,13 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: fullName, clinic_name: clinicName },
-        emailRedirectTo: `${window.location.origin}/login`,
+        // Must point at /api/auth/callback, not straight at /login — that
+        // route is what actually calls exchangeCodeForSession() to turn the
+        // confirmation link's code into a real session. Pointing directly
+        // at /login skipped that exchange entirely, so the confirmation
+        // link never logged anyone in (this was the actual bug behind
+        // "confirmé el correo y me salió una pantalla en blanco").
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
       },
     })
 
