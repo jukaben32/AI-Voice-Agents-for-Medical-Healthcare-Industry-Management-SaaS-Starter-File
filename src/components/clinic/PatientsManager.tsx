@@ -96,7 +96,7 @@ export function PatientsManager({
           </div>
 
           {showForm && (
-            <form onSubmit={handleCreate} className="mt-5 space-y-3 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
+            <form onSubmit={handleCreate} className="mt-5 space-y-3 rounded-none border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
               {error && <p className="text-sm font-medium text-[var(--coral)]">{error}</p>}
               <div className="grid gap-3 sm:grid-cols-2">
                 <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className="input-field w-full" required />
@@ -127,8 +127,8 @@ export function PatientsManager({
                   key={patient.id}
                   type="button"
                   onClick={() => setSelectedId(patient.id)}
-                  className={`flex w-full items-center justify-between gap-4 rounded-[22px] border px-4 py-3 text-left transition ${
-                    selectedId === patient.id ? 'border-[var(--brand)] bg-teal-50/60' : 'border-[var(--border-soft)] bg-[var(--panel-soft)]'
+                  className={`flex w-full items-center justify-between gap-4 rounded-none border px-4 py-3 text-left transition ${
+                    selectedId === patient.id ? 'border-[var(--brand)] bg-[var(--brand-soft)]' : 'border-[var(--border-soft)] bg-[var(--panel-soft)]'
                   }`}
                 >
                   <div>
@@ -162,7 +162,7 @@ export function PatientsManager({
                 <ValueCard label="Completed" value={String(completedCount)} icon={CheckCircle2} tone="emerald" />
                 <ValueCard label="This month" value={String(thisMonthCount)} icon={LineChart} tone="blue" />
               </div>
-              <div className="mt-6 space-y-3 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
+              <div className="mt-6 space-y-3 rounded-none border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-sm text-[var(--text-muted)]">Phone</span>
                   <strong className="text-sm text-[var(--text-strong)]">{selected.phone ?? 'Not on file'}</strong>

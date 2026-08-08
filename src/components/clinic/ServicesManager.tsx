@@ -102,7 +102,7 @@ export function ServicesManager({ initialServices, businessId }: { initialServic
 
           {error && <p className="mt-3 text-sm font-medium text-[var(--coral)]">{error}</p>}
 
-          <form onSubmit={handleCreate} className="mt-6 space-y-4 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
+          <form onSubmit={handleCreate} className="mt-6 space-y-4 rounded-none border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-[var(--text-strong)]">Service name</label>
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="General Consultation" className="input-field w-full" required />

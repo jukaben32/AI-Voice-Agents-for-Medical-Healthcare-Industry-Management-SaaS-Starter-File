@@ -89,10 +89,10 @@ export function AppointmentsManager({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[28px] border border-white/70 bg-white/90 px-6 py-5 shadow-[0_16px_50px_rgba(15,23,42,0.06)] md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 rounded-none border border-[var(--border-soft)] bg-[var(--panel)] px-6 py-5 shadow-[2px_2px_0_0_var(--border-soft)] md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Appointments</div>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-strong)]">Track every booking and status change</h1>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--text-strong)]">Track every booking and status change</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => (
@@ -101,10 +101,10 @@ export function AppointmentsManager({
               type="button"
               onClick={() => setFilter(tab.status)}
               className={cn(
-                'rounded-full px-4 py-2 text-sm font-semibold transition',
+                'rounded-none border px-4 py-2 text-sm font-semibold transition',
                 filter === tab.status
-                  ? 'bg-[var(--brand)] text-white shadow-[0_10px_24px_rgba(13,148,136,0.22)]'
-                  : 'bg-white text-[var(--text-muted)] hover:bg-teal-50 hover:text-[var(--text-strong)]'
+                  ? 'border-[var(--brand)] bg-[var(--brand)] text-white'
+                  : 'border-[var(--border-soft)] bg-[var(--panel)] text-[var(--text-muted)] hover:bg-[var(--panel-soft)] hover:text-[var(--text-strong)]'
               )}
             >
               {tab.label}
@@ -116,14 +116,14 @@ export function AppointmentsManager({
       {error && <p className="text-sm font-medium text-[var(--coral)]">{error}</p>}
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-          <div className="grid grid-cols-12 gap-3 border-b border-slate-200/80 bg-slate-50 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">
+        <div className="overflow-hidden rounded-none border border-[var(--border-soft)] bg-[var(--panel)]">
+          <div className="grid grid-cols-12 gap-3 border-b border-[var(--border-soft)] bg-[var(--panel-soft)] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">
             <div className="col-span-4">Patient</div>
             <div className="col-span-3">Service</div>
             <div className="col-span-3">Date &amp; time</div>
             <div className="col-span-2">Status</div>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[var(--border-soft)]">
             {filtered.length === 0 && <p className="px-5 py-6 text-sm text-[var(--text-muted)]">No appointments in this filter.</p>}
             {filtered.map((appt) => (
               <button
@@ -132,7 +132,7 @@ export function AppointmentsManager({
                 onClick={() => setSelectedId(appt.id)}
                 className={cn(
                   'grid w-full grid-cols-12 gap-3 px-5 py-4 text-left text-sm transition',
-                  selected?.id === appt.id ? 'bg-teal-50/60' : 'hover:bg-slate-50'
+                  selected?.id === appt.id ? 'bg-[var(--brand-soft)]' : 'hover:bg-[var(--panel-soft)]'
                 )}
               >
                 <div className="col-span-4 font-semibold text-[var(--text-strong)]">{appt.patient?.name ?? 'Unknown patient'}</div>
@@ -158,7 +158,7 @@ export function AppointmentsManager({
                 </div>
                 <StatusBadge tone={STATUS_TONE[selected.status]}>{STATUS_LABEL[selected.status]}</StatusBadge>
               </div>
-              <div className="mt-5 space-y-4 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
+              <div className="mt-5 space-y-4 rounded-none border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-sm font-medium text-[var(--text-muted)]">Patient</span>
                   <strong className="text-sm text-[var(--text-strong)]">{selected.patient?.name ?? 'Unknown'}</strong>
