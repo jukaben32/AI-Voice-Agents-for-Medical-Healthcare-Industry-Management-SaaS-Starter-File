@@ -2091,92 +2091,9 @@ export function SiteSlugScreen({ slug }: { slug: string }) {
   )
 }
 
-export function AuthLoginScreen() {
-  return (
-    <div className="grid min-h-screen gap-8 px-4 py-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
-      <SurfaceCard className="relative overflow-hidden bg-slate-950 p-8 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.25),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.18),transparent_30%)]" />
-        <div className="relative">
-          <BrandMark />
-          <h1 className="mt-10 max-w-xl text-5xl font-black tracking-tight sm:text-6xl">
-            The future of clinic booking is here.
-          </h1>
-          <p className="mt-5 max-w-lg text-base leading-8 text-white/76">
-            The AI receptionist handles bookings 24/7 so your staff can focus on what matters most.
-          </p>
-          <div className="mt-8 space-y-3">
-            <div className="rounded-[24px] border border-white/10 bg-white/6 px-5 py-4">
-              <div className="text-sm font-bold">Clara-powered AI booking assistant</div>
-              <div className="text-xs text-white/70">Patients can call, chat, or use the website widget.</div>
-            </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/6 px-5 py-4">
-              <div className="text-sm font-bold">Secure, multi-tenant data model</div>
-              <div className="text-xs text-white/70">Each clinic keeps its own appointments and settings.</div>
-            </div>
-          </div>
-        </div>
-      </SurfaceCard>
-      <SurfaceCard className="flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <SectionEyebrow>Staff login</SectionEyebrow>
-          <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-strong)]">Welcome back</h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">Sign in to your clinic dashboard.</p>
-          <div className="mt-8 space-y-4">
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-[var(--text-strong)]">Email address</div>
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">you@clinic.com</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-[var(--text-strong)]">Password</div>
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">••••••••</div>
-            </div>
-            <ButtonLink href="/dashboard" icon="arrow">
-              Sign in
-            </ButtonLink>
-          </div>
-        </div>
-      </SurfaceCard>
-    </div>
-  )
-}
-
-export function AuthSignupScreen() {
-  return (
-    <div className="grid min-h-screen gap-8 px-4 py-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-      <SurfaceCard className="flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <SectionEyebrow>Start free trial</SectionEyebrow>
-          <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-strong)]">Create your clinic account</h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {['Full name', 'Clinic name', 'Email address', 'Phone number'].map((label) => (
-              <div key={label} className="space-y-2">
-                <div className="text-sm font-semibold text-[var(--text-strong)]">{label}</div>
-                <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">
-                  Enter {label.toLowerCase()}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 space-y-4">
-            <ButtonLink href="/dashboard" icon="calendar">
-              Start 14-day trial
-            </ButtonLink>
-            <div className="text-sm text-[var(--text-muted)]">No credit card required.</div>
-          </div>
-        </div>
-      </SurfaceCard>
-      <SurfaceCard className="relative overflow-hidden bg-slate-950 p-8 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(20,184,166,0.24),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(244,63,94,0.18),transparent_30%)]" />
-        <div className="relative">
-          <BrandMark />
-          <h1 className="mt-10 max-w-xl text-5xl font-black tracking-tight sm:text-6xl">
-            Launch a clinic concierge experience in days, not months.
-          </h1>
-          <p className="mt-5 max-w-lg text-base leading-8 text-white/76">
-            Add the widget, configure AI settings, and keep every booking tied to the same source of truth.
-          </p>
-        </div>
-      </SurfaceCard>
-    </div>
-  )
-}
+// AuthLoginScreen / AuthSignupScreen were removed from here — they were
+// static mockups (the "email"/"password" fields were plain <div>s, not
+// inputs; "Sign in" was a link to /dashboard with no auth check at all).
+// Real, functional versions now live directly in
+// src/app/(auth)/login/page.tsx and src/app/(auth)/signup/page.tsx, wired
+// to supabase.auth and services/business.ts's createBusiness().
