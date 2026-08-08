@@ -773,79 +773,12 @@ export function DashboardOverviewScreen() {
 // email + creates the in-app notification — reusing it instead of calling
 // updateAppointmentStatus directly keeps that behavior).
 
-export function DashboardWidgetScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Widget</SectionEyebrow>}
-        title="Match the booking widget to the clinic brand"
-        description="Configure colors, tone, slot duration, welcome copy, and the booking CTA. The embed code updates instantly."
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.86fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Appearance</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Widget color and tone</h2>
-            </div>
-            <StatusBadge tone="rose">Live widget</StatusBadge>
-          </div>
-          <div className="mt-6 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-            <div className="rounded-[24px] border border-[var(--border-soft)] bg-white p-5">
-              <div className="text-sm font-bold text-[var(--text-strong)]">Primary color</div>
-              <div className="mt-4 flex items-center gap-3">
-                {['#0f766e', '#0ea5e9', '#ef4444', '#f59e0b', '#8b5cf6'].map((color) => (
-                  <span key={color} className="h-8 w-8 rounded-full border border-white shadow" style={{ backgroundColor: color }} />
-                ))}
-              </div>
-              <div className="mt-5 space-y-3">
-                <ValueCard label="Slot duration" value="15 min" icon={Clock3} tone="teal" />
-                <ValueCard label="Tone" value="Professional" icon={Sparkles} tone="blue" />
-              </div>
-            </div>
-            <div className="rounded-[24px] border border-[var(--border-soft)] bg-slate-950 p-5 text-white">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">Embed code</div>
-              <pre className="mt-4 overflow-auto rounded-[22px] bg-slate-900/80 p-4 text-[11px] leading-6 text-teal-200">
-{`<script>
-  (function () {
-    var iframe = document.createElement('iframe');
-    iframe.src = 'http://localhost:3000/widget/clinic-demo';
-    iframe.style.cssText = 'position:fixed;bottom:0;right:0;width:420px;height:680px;border:none;z-index:9999;background:transparent;';
-    iframe.allow = 'clipboard-write';
-    document.body.appendChild(iframe);
-  })();
-</script>`}
-              </pre>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <ButtonLink href="/widget-demo" icon="arrow">
-                  Open demo
-                </ButtonLink>
-                <ButtonLink href="/dashboard/widget" variant="secondary" icon="none">
-                  Copy snippet
-                </ButtonLink>
-              </div>
-            </div>
-          </div>
-        </SurfaceCard>
-
-        <PhoneFrame title="Clara AI" subtitle="AI Assistant Online" accent="rose">
-          <div className="space-y-3">
-            <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              Welcome to the clinic assistant. How can I help you today?
-            </div>
-            {widgetSteps.map((step) => (
-              <div key={step.title} className="rounded-2xl border border-[var(--border-soft)] px-4 py-3">
-                <div className="text-sm font-bold text-[var(--text-strong)]">{step.title}</div>
-                <div className="text-xs leading-6 text-[var(--text-muted)]">{step.detail}</div>
-              </div>
-            ))}
-          </div>
-        </PhoneFrame>
-      </div>
-    </div>
-  )
-}
+// DashboardWidgetScreen was removed from here — colors/tone/slot duration
+// were plain display values (not inputs) and the embed snippet pointed at
+// a hardcoded iframe src. A real version now lives in
+// src/components/clinic/WidgetManager.tsx, wired to services/widgets.ts
+// (getWidgetForBusiness/updateWidget) and the real /api/widget-script
+// embed route.
 
 // DashboardWebsiteScreen was removed from here — it was a static preview
 // mockup with fake copy ("Heart Care You Can Trust") and no connection to
