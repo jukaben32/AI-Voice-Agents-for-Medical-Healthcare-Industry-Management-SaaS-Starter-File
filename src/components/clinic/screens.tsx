@@ -1,22 +1,17 @@
 import type { ReactNode } from 'react'
 import {
-  Activity,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
   Clock3,
-  CircleDollarSign,
   ClipboardList,
   CreditCard,
   Database,
-  FileText,
   HeartPulse,
   LayoutDashboard,
   LifeBuoy,
   LineChart,
   Lock,
-  Mail,
-  MessageCircle,
   MessageSquare,
   Mic,
   NotebookText,
@@ -59,7 +54,6 @@ import {
   MetricCard,
   PhoneFrame,
   Pill,
-  ProgressRail,
   QuoteCard,
   SectionEyebrow,
   SectionHeading,
@@ -71,22 +65,6 @@ import {
 } from './shared'
 
 type ClinicTone = 'teal' | 'emerald' | 'blue' | 'amber' | 'rose' | 'slate'
-
-const dashboardStats = [
-  { label: 'Today', value: '2', delta: '+1 vs yesterday', icon: CalendarDays, tone: 'teal' as const },
-  { label: 'Upcoming', value: '7', delta: '+3 booked overnight', icon: Clock3, tone: 'blue' as const },
-  { label: 'Patients', value: '14', delta: '+2 new patients', icon: Users, tone: 'emerald' as const },
-  { label: 'Cancelled', value: '1', delta: 'Needs review', icon: X, tone: 'rose' as const },
-  { label: 'Completion', value: '67%', delta: '12 completed this month', icon: CheckCircle2, tone: 'teal' as const },
-  { label: 'No-shows', value: '33%', delta: 'Target: below 10%', icon: Activity, tone: 'amber' as const },
-] as const
-
-const dashboardSchedule = [
-  { patient: 'Dault Hussain', service: 'General Consultation', time: '2:30 PM - 3:00 PM', source: 'AI Widget', status: 'Booked' },
-  { patient: 'Md Shair', service: 'Follow Up Visit', time: '3:30 PM - 4:00 PM', source: 'Portal', status: 'Confirmed' },
-  { patient: 'Amit', service: 'General Consultation', time: '4:30 PM - 5:00 PM', source: 'Phone', status: 'Completed' },
-  { patient: 'Mohi', service: 'Cardiology Review', time: '5:00 PM - 5:30 PM', source: 'AI Widget', status: 'Booked' },
-]
 
 const upcomingAppointments = [
   { name: 'Md Tajuddin', note: 'General Consultation', tone: 'teal' as const },
@@ -605,150 +583,15 @@ export function MarketingHomeScreen() {
   )
 }
 
-export function DashboardOverviewScreen() {
-  return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 rounded-[30px] border border-white/70 bg-white/90 px-6 py-5 shadow-[0_16px_50px_rgba(15,23,42,0.06)] backdrop-blur md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Live dashboard</div>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-strong)]">
-            Good evening, Dr. Harrington
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Sunday, April 26, 2026, the clinic is running with 2 appointments today and 7 upcoming bookings.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <ButtonLink href="/dashboard/appointments" icon="none">
-            View all appointments
-          </ButtonLink>
-          <ButtonLink href="/dashboard/widget" variant="secondary" icon="none">
-            Widget settings
-          </ButtonLink>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        {dashboardStats.map((item) => (
-          <MetricCard
-            key={item.label}
-            label={item.label}
-            value={item.value}
-            delta={item.delta}
-            icon={item.icon}
-            tone={item.tone}
-          />
-        ))}
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.34fr_0.86fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Today&apos;s schedule</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Bookings confirmed by Clara</h2>
-            </div>
-            <StatusBadge tone="teal">2 appointments</StatusBadge>
-          </div>
-          <div className="mt-6 overflow-hidden rounded-[24px] border border-[var(--border-soft)]">
-            <div className="grid grid-cols-12 gap-3 bg-slate-50 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">
-              <div className="col-span-4">Patient</div>
-              <div className="col-span-3">Service</div>
-              <div className="col-span-3">Date & time</div>
-              <div className="col-span-2">Status</div>
-            </div>
-            <div className="divide-y divide-slate-100 bg-white">
-              {dashboardSchedule.map((item) => (
-                <div key={`${item.patient}-${item.time}`} className="grid grid-cols-12 gap-3 px-5 py-4 text-sm">
-                  <div className="col-span-4 font-semibold text-[var(--text-strong)]">{item.patient}</div>
-                  <div className="col-span-3 text-[var(--text-muted)]">{item.service}</div>
-                  <div className="col-span-3 text-[var(--text-muted)]">{item.time}</div>
-                  <div className="col-span-2">
-                    <StatusBadge tone={item.status === 'Completed' ? 'emerald' : item.status === 'Confirmed' ? 'blue' : 'teal'}>
-                      {item.status}
-                    </StatusBadge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Upcoming</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Next patients</h2>
-            </div>
-            <ArrowLink href="/dashboard/appointments">See all</ArrowLink>
-          </div>
-          <div className="mt-5 space-y-3">
-            {upcomingAppointments.map((item) => (
-              <div key={item.name} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{item.name}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{item.note}</div>
-                  </div>
-                  <StatusBadge tone={item.tone}>Booked</StatusBadge>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 rounded-[24px] border border-[var(--border-soft)] bg-white p-5">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Assistant activity</div>
-            <div className="mt-4 space-y-3">
-              <ProgressRail value={82} label="Calls handled" tone="teal" />
-              <ProgressRail value={64} label="Widget conversion" tone="blue" />
-              <ProgressRail value={29} label="No-show risk" tone="amber" />
-            </div>
-          </div>
-        </SurfaceCard>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">AI assistant</div>
-              <h3 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Clara is online and ready</h3>
-            </div>
-            <StatusBadge tone="emerald">Realtime</StatusBadge>
-          </div>
-          <div className="mt-5 space-y-4">
-            <div className="rounded-[24px] border border-[var(--border-soft)] bg-slate-950 px-5 py-4 text-white">
-              <div className="text-sm font-bold">Welcome message</div>
-              <p className="mt-2 text-sm leading-7 text-white/74">
-                Hello, I&apos;m Clara, your AI medical receptionist. I can help you book, reschedule, cancel, or ask clinic questions.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <ValueCard label="Knowledge docs" value="24" icon={FileText} tone="teal" />
-              <ValueCard label="FAQs active" value="8" icon={MessageCircle} tone="blue" />
-            </div>
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Operational snapshot</div>
-              <h3 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">What changed since yesterday</h3>
-            </div>
-            <ButtonLink href="/dashboard/analytics" variant="secondary" icon="arrow">
-              Open analytics
-            </ButtonLink>
-          </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <ValueCard label="New patients" value="5" icon={Users} tone="emerald" />
-            <ValueCard label="Reminder emails" value="18" icon={Mail} tone="blue" />
-            <ValueCard label="Payments captured" value="$540" icon={CircleDollarSign} tone="rose" />
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardOverviewScreen was removed from here — this was the single
+// biggest source of confusion in the whole app: "Dr. Harrington", "Sunday,
+// April 26, 2026", and the patient names in dashboardStats/dashboardSchedule
+// (Dault Hussain, Md Shair...) looked convincing enough that they were
+// mistaken for real data during testing (Juan/Hermes both flagged this). A
+// real version now lives in src/components/clinic/DashboardOverviewManager.tsx:
+// real greeting/date, real today's schedule and upcoming list
+// (listAppointmentsForBusiness), real stats (getDashboardAnalytics), real
+// live agent + knowledge doc counts, and real revenue (getBillingSummary).
 
 // DashboardAppointmentsScreen was removed from here — same story: hardcoded
 // rows (Md Tajuddin, Shakib, Amit, Dault Hussain), status filter pills with
