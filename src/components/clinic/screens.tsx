@@ -1043,79 +1043,12 @@ export function DashboardAnalyticsScreen() {
   )
 }
 
-export function DashboardBillingScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Billing</SectionEyebrow>}
-        title="USDC billing, deposits, and subscription plans"
-        description="Track tx hashes, payment types, and appointment-linked transactions directly from the clinic dashboard."
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Plans</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Current plan and pricing</h2>
-            </div>
-            <StatusBadge tone="emerald">Active</StatusBadge>
-          </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {[
-              { name: 'Starter', price: 49, body: '50 appointments/month, widget, and basic calendar.', tone: 'teal' as const },
-              { name: 'Professional', price: 99, body: 'Unlimited appointments, analytics, and custom AI.', tone: 'blue' as const },
-              { name: 'Enterprise', price: 299, body: 'Multi-clinic, custom integrations, dedicated support.', tone: 'rose' as const },
-              { name: 'Free', price: 0, body: 'Demo access and sandbox widgets for testing.', tone: 'emerald' as const },
-            ].map((plan) => (
-              <SurfaceCard key={plan.name} className="p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{plan.name}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{plan.body}</div>
-                  </div>
-                  <div className="text-2xl font-black tracking-tight text-[var(--text-strong)]">
-                    {plan.price === 0 ? '$0' : `$${plan.price}`}
-                  </div>
-                </div>
-              </SurfaceCard>
-            ))}
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Transactions</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Recent billing activity</h2>
-            </div>
-            <StatusBadge tone="teal">Polygon</StatusBadge>
-          </div>
-          <div className="mt-6 space-y-3">
-            {[
-              ['Booking deposit', '$49', '0x12f...9ac', 'Confirmed'],
-              ['Full payment', '$90', '0x8aa...4f2', 'Confirmed'],
-              ['Portal top up', '$25', '0xbc4...a81', 'Pending'],
-            ].map(([type, amount, hash, status]) => (
-              <div key={`${type}-${hash}`} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{type}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{hash}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{amount}</div>
-                    <StatusBadge tone={status === 'Confirmed' ? 'emerald' : 'amber'}>{status}</StatusBadge>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardBillingScreen was removed from here — plan cards and the
+// transaction list were both hardcoded literals (no plan was ever really
+// "Active", the tx hashes were fake). A real version now lives in
+// src/components/clinic/BillingManager.tsx, reading the real subscription
+// (services/business.ts getSubscription), payment wallet config, and
+// billing_transactions history (services/billing.ts, already existed).
 
 export function PortalHomeScreen() {
   return (
