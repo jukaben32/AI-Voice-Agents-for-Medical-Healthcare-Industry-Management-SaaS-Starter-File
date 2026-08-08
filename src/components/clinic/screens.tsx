@@ -878,75 +878,13 @@ export function DashboardSettingsScreen() {
 // status) — replies actually post to support_messages and status buttons
 // call updateSupportTicketStatus.
 
-export function DashboardNotificationsScreen() {
-  const notifications: Array<{
-    title: string
-    message: string
-    tone: ClinicTone
-  }> = [
-    {
-      title: 'Appointment confirmed',
-      message: 'Md Tajuddin booked General Consultation for Apr 30, 4:30 PM.',
-      tone: 'teal',
-    },
-    {
-      title: 'Payment received',
-      message: 'USDC deposit captured and linked to the appointment.',
-      tone: 'emerald',
-    },
-    {
-      title: 'Widget updated',
-      message: 'Primary color changed from teal to coral for the clinic widget.',
-      tone: 'blue',
-    },
-    {
-      title: 'Ticket escalated',
-      message: 'One billing question requires staff review.',
-      tone: 'rose',
-    },
-  ]
-
-  return (
-    <div className="space-y-6">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Notifications</SectionEyebrow>}
-        title="Everything the team should know, in one feed"
-        description="Booking updates, payment confirmations, support alerts, and system notices arrive in one place."
-      />
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <SurfaceCard className="p-6">
-          <div className="space-y-3">
-            {notifications.map((item) => (
-              <div key={item.title} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{item.title}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{item.message}</div>
-                  </div>
-                  <StatusBadge tone={item.tone}>{item.tone}</StatusBadge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Delivery</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Read and action statuses</h2>
-            </div>
-            <StatusBadge tone="teal">24 unread</StatusBadge>
-          </div>
-          <div className="mt-5 space-y-4">
-            <ProgressRail value={86} label="Email delivery" tone="teal" />
-            <ProgressRail value={72} label="Widget pings" tone="blue" />
-            <ProgressRail value={41} label="Escalations" tone="amber" />
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardNotificationsScreen was removed from here — 4 example
+// notifications plus a "Read and action statuses" panel with invented
+// delivery percentages (86% email delivery, 72% widget pings, none of it
+// backed by real data). A real version now lives in
+// src/components/clinic/NotificationsManager.tsx, wired to
+// services/notifications.ts (already existed): a real activity feed with
+// mark-as-read / mark-all-read against the notifications table.
 
 export function DashboardAnalyticsScreen() {
   return (
