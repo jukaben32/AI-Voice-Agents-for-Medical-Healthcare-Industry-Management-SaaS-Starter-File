@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,20 +6,26 @@
 
 @layer base {
   :root {
-    --page-bg: #f3f8f8;
+    /* Retinted to match the InmobilIACall / real-estate-multi-ai-agent-saas
+       palette (marfil cálido + verde esmeralda) — same variable NAMES kept
+       (they're referenced directly, not just through the .css utility
+       classes below, in ~375 places across ~17 component/page files), only
+       the VALUES changed, so this is a values-only swap with no risk of an
+       undefined-variable regression anywhere else in the app. */
+    --page-bg: #faf7f0;
     --panel: #ffffff;
-    --panel-soft: #f7fbfb;
-    --panel-elevated: #eef7f7;
-    --text-strong: #0c2630;
-    --text-muted: #5c7880;
-    --brand: #0f766e;
-    --brand-strong: #0c5f59;
-    --brand-soft: #d8f3f0;
+    --panel-soft: #f3eee3;
+    --panel-elevated: #e4f2eb;
+    --text-strong: #0e2019;
+    --text-muted: #6b7a71;
+    --brand: #0e7c5a;
+    --brand-strong: #0a5c42;
+    --brand-soft: #cfeee0;
     --coral: #ef4444;
     --coral-soft: #fee2e2;
-    --teal-soft: #dbf4f2;
-    --border-soft: rgba(15, 118, 110, 0.14);
-    --border-strong: rgba(15, 118, 110, 0.24);
+    --teal-soft: #cfeee0;
+    --border-soft: #e6e0d2;
+    --border-strong: rgba(14, 124, 90, 0.4);
   }
 
   * {
@@ -30,12 +36,9 @@
   body {
     min-height: 100%;
     overflow-x: hidden;
-    background:
-      radial-gradient(circle at top left, rgba(20, 184, 166, 0.12), transparent 28%),
-      radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 24%),
-      linear-gradient(180deg, #f3f8f8 0%, #f7fbfb 100%);
+    background-color: var(--page-bg);
     color: var(--text-strong);
-    font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -51,7 +54,7 @@
   h4,
   h5,
   h6 {
-    font-family: 'DM Sans', 'Manrope', system-ui, sans-serif;
+    font-family: 'Fraunces', 'Inter', system-ui, sans-serif;
     letter-spacing: -0.04em;
   }
 
@@ -69,7 +72,7 @@
   }
 
   ::selection {
-    background: rgba(15, 118, 110, 0.18);
+    background: rgba(14, 124, 90, 0.18);
     color: #07332f;
   }
 }
@@ -88,13 +91,13 @@
   }
 
   .card-glow {
-    @apply rounded-[28px] border border-[var(--border-strong)] bg-[var(--panel)] shadow-[0_0_0_1px_rgba(15,118,110,0.08),0_18px_50px_rgba(15,118,110,0.12)];
+    @apply rounded-[28px] border border-[var(--border-strong)] bg-[var(--panel)] shadow-[0_0_0_1px_rgba(14,124,90,0.08),0_18px_50px_rgba(14,124,90,0.12)];
   }
 
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold text-white transition duration-200 hover:-translate-y-0.5 active:translate-y-0;
-    background: linear-gradient(135deg, var(--brand) 0%, #14b8a6 100%);
-    box-shadow: 0 14px 32px rgba(15, 118, 110, 0.24);
+    background: linear-gradient(135deg, var(--brand) 0%, #0E7C5A 100%);
+    box-shadow: 0 14px 32px rgba(14, 124, 90, 0.24);
   }
 
   .btn-primary:hover {
@@ -120,8 +123,8 @@
   }
 
   .input-field:focus {
-    border-color: rgba(15, 118, 110, 0.35);
-    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    border-color: rgba(14, 124, 90, 0.35);
+    box-shadow: 0 0 0 4px rgba(14, 124, 90, 0.12);
   }
 
   .badge {
@@ -154,32 +157,32 @@
 @layer utilities {
   .gradient-mesh {
     background:
-      radial-gradient(circle at top left, rgba(20, 184, 166, 0.12), transparent 28%),
-      radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 22%),
-      linear-gradient(180deg, #f3f8f8 0%, #f7fbfb 100%);
+      radial-gradient(circle at top left, rgba(14, 124, 90, 0.12), transparent 28%),
+      radial-gradient(circle at top right, rgba(182, 138, 62, 0.08), transparent 22%),
+      linear-gradient(180deg, #FAF7F0 0%, #F3EEE3 100%);
   }
 
   .gradient-sidebar {
-    background: linear-gradient(180deg, #071e24 0%, #0a3130 48%, #0f766e 100%);
+    background: linear-gradient(180deg, #0E2019 0%, #0A5C42 48%, #0E7C5A 100%);
   }
 
   .gradient-teal {
-    background: linear-gradient(135deg, var(--brand) 0%, #14b8a6 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, #0E7C5A 100%);
   }
 
   .gradient-teal-soft {
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(20, 184, 166, 0.06) 100%);
+    background: linear-gradient(135deg, rgba(14, 124, 90, 0.12) 0%, rgba(14, 124, 90, 0.06) 100%);
   }
 
   .text-gradient-teal {
-    background: linear-gradient(135deg, #14b8a6 0%, #0f766e 60%, #0c5f59 100%);
+    background: linear-gradient(135deg, #0E7C5A 0%, #0A5C42 60%, #0E2019 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .text-gradient-hero {
-    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 55%, #0c5f59 100%);
+    background: linear-gradient(135deg, #0A5C42 0%, #0E7C5A 55%, #0E2019 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -205,13 +208,13 @@
   }
 
   .shimmer-bg {
-    background: linear-gradient(90deg, rgba(20, 184, 166, 0.04) 25%, rgba(20, 184, 166, 0.1) 50%, rgba(20, 184, 166, 0.04) 75%);
+    background: linear-gradient(90deg, rgba(14, 124, 90, 0.04) 25%, rgba(14, 124, 90, 0.1) 50%, rgba(14, 124, 90, 0.04) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.6s linear infinite;
   }
 
   .ecg-line {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Cpolyline points='0,20 30,20 40,8 50,32 60,8 70,20 100,20 110,12 120,28 130,20 200,20' fill='none' stroke='rgba(15,118,110,0.16)' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40'%3E%3Cpolyline points='0,20 30,20 40,8 50,32 60,8 70,20 100,20 110,12 120,28 130,20 200,20' fill='none' stroke='rgba(14,124,90,0.16)' stroke-width='1.5'/%3E%3C/svg%3E");
     background-repeat: repeat-x;
     background-size: 200px 40px;
   }
@@ -267,11 +270,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(15, 118, 110, 0.2);
+  background: rgba(14, 124, 90, 0.2);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 118, 110, 0.34);
+  background: rgba(14, 124, 90, 0.34);
 }
 
