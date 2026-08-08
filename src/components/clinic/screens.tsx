@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LineChart,
-  ListChecks,
   Lock,
   Mail,
   MessageCircle,
@@ -39,7 +38,6 @@ import {
   Search,
   PanelTop,
   FileSpreadsheet,
-  ChartNoAxesCombined,
   ChevronRight,
   Upload,
   Pencil,
@@ -48,7 +46,6 @@ import {
   Hospital,
   MonitorSmartphone,
   X,
-  ShieldAlert,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -818,54 +815,14 @@ export function DashboardOverviewScreen() {
 // services/notifications.ts (already existed): a real activity feed with
 // mark-as-read / mark-all-read against the notifications table.
 
-export function DashboardAnalyticsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Analytics</SectionEyebrow>}
-        title="Booking trends and operational health"
-        description="Use the analytics view to monitor conversions, no-shows, patient growth, and appointment completion."
-      />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Conversion rate" value="67%" delta="Widget to booking" icon={ChartNoAxesCombined} tone="teal" />
-        <MetricCard label="No-show rate" value="33%" delta="Trending down" icon={ShieldAlert} tone="rose" />
-        <MetricCard label="Completion" value="50%" delta="More follow-ups needed" icon={ListChecks} tone="emerald" />
-        <MetricCard label="Revenue tracked" value="$8.2k" delta="USDC + deposits" icon={CircleDollarSign} tone="blue" />
-      </div>
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Trend</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Weekly booking volume</h2>
-            </div>
-            <StatusBadge tone="blue">Last 7 days</StatusBadge>
-          </div>
-          <div className="mt-6 grid grid-cols-7 gap-3">
-            {[42, 56, 51, 68, 76, 49, 62].map((value, index) => (
-              <div key={index} className="flex flex-col items-center gap-3">
-                <div className="flex h-48 w-full items-end rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-3">
-                  <div className="w-full rounded-[18px] bg-gradient-to-t from-teal-600 to-cyan-400" style={{ height: `${value}%` }} />
-                </div>
-                <div className="text-[11px] font-semibold text-[var(--text-muted)]">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-6">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Insights</div>
-          <div className="mt-4 space-y-4">
-            <ProgressRail value={87} label="Appointment volume" tone="teal" />
-            <ProgressRail value={72} label="Patient satisfaction" tone="emerald" />
-            <ProgressRail value={38} label="Manual follow-up load" tone="amber" />
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardAnalyticsScreen was removed from here — every metric (67%
+// conversion, 33% no-show, the 7-day bar chart values, "$8.2k" revenue)
+// was a fixed literal. A real version now lives in
+// src/components/clinic/AnalyticsManager.tsx: conversion/no-show/
+// completion computed from real appointments and conversations
+// (getDashboardAnalytics, listConversationsForBusiness — already
+// existed), revenue from getBillingSummary, and the weekly bar chart from
+// real appointment creation timestamps this week.
 
 // DashboardBillingScreen was removed from here — plan cards and the
 // transaction list were both hardcoded literals (no plan was ever really
