@@ -1110,57 +1110,6 @@ export function DashboardAnalyticsScreen() {
   )
 }
 
-export function DashboardConversationsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Conversations</SectionEyebrow>}
-        title="Call transcripts and chatbot history"
-        description="Review what Clara said, how the call ended, and whether the conversation produced a booking."
-      />
-      <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-        <SurfaceCard className="p-6">
-          <div className="space-y-3">
-            {[
-              ['Booked appointment', 'widget_voice', 'positive'],
-              ['Qualified lead', 'widget_chat', 'neutral'],
-              ['Escalated', 'phone', 'negative'],
-            ].map(([outcome, channel, sentiment]) => (
-              <div key={outcome} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{outcome}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{channel}</div>
-                  </div>
-                  <StatusBadge tone={sentiment === 'positive' ? 'emerald' : sentiment === 'neutral' ? 'blue' : 'rose'}>
-                    {sentiment}
-                  </StatusBadge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Transcript</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">“I want to book an appointment”</h2>
-            </div>
-            <StatusBadge tone="teal">5m 12s</StatusBadge>
-          </div>
-          <div className="mt-5 space-y-4">
-            <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">Patient: I want to book an appointment.</div>
-            <div className="ml-auto max-w-[85%] rounded-2xl bg-teal-500 px-4 py-3 text-sm text-white">
-              Clara: Of course, I can help. Which service are you interested in?
-            </div>
-            <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">Patient: General consultation.</div>
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
-
 export function DashboardBillingScreen() {
   return (
     <div className="space-y-8">
