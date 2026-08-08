@@ -39,34 +39,39 @@ type NavGroup = {
   items: readonly NavItem[]
 }
 
+// Grouped to mirror the "Industry" dashboard reference (Principal /
+// Herramientas / Cuenta / Plataforma). Only routes that already exist with
+// real pages are linked here — Calendar, Knowledge base, WhatsApp, Profile,
+// and Platform admin from the reference have no page/table yet, so they're
+// deliberately left out rather than added as dead links or empty mockups.
 const navGroups: readonly NavGroup[] = [
   {
-    label: 'Main',
+    label: 'Principal',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/dashboard/appointments', label: 'Appointments', icon: CalendarDays },
       { href: '/dashboard/patients', label: 'Patients', icon: Users },
       { href: '/dashboard/services', label: 'Services', icon: Stethoscope },
-      { href: '/dashboard/agents', label: 'AI Settings', icon: Bot },
     ],
   },
   {
-    label: 'Insights',
+    label: 'Herramientas',
     items: [
-      { href: '/dashboard/analytics', label: 'Analytics', icon: LineChart },
-      { href: '/dashboard/conversations', label: 'Conversations', icon: MessageCircle },
-      { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-      { href: '/dashboard/faqs', label: 'FAQs', icon: FileText },
-    ],
-  },
-  {
-    label: 'Config',
-    items: [
+      { href: '/dashboard/agents', label: 'AI Agents', icon: Bot },
       { href: '/dashboard/widget', label: 'Widget', icon: Sparkles },
       { href: '/dashboard/website', label: 'Website', icon: Globe2 },
-      { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
-      { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
+      { href: '/dashboard/analytics', label: 'Analytics', icon: LineChart },
+      { href: '/dashboard/conversations', label: 'Conversations', icon: MessageCircle },
+      { href: '/dashboard/faqs', label: 'Knowledge', icon: FileText },
+    ],
+  },
+  {
+    label: 'Cuenta',
+    items: [
       { href: '/dashboard/billing', label: 'Billing', icon: Wallet },
+      { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
+      { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
+      { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
     ],
   },
 ]
