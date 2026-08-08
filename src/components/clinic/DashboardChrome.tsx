@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Bell,
   CalendarDays,
+  CalendarRange,
   FileText,
   LayoutDashboard,
   LifeBuoy,
@@ -50,6 +51,7 @@ const navGroups: readonly NavGroup[] = [
     label: 'Principal',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard/appointments/schedule', label: 'Calendar', icon: CalendarRange },
       { href: '/dashboard/appointments', label: 'Appointments', icon: CalendarDays },
       { href: '/dashboard/patients', label: 'Patients', icon: Users },
       { href: '/dashboard/services', label: 'Services', icon: Stethoscope },
@@ -82,6 +84,15 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+// Longest matching href wins so a parent route (e.g. /dashboard/appointments)
+// doesn't also light up when a more specific child route has its own nav
+// entry (e.g. /dashboard/appointments/schedule for Calendar).
+function bestMatch(pathname: string, items: readonly NavItem[]) {
+  return items
+    .filter((item) => isActive(pathname, item.href))
+    .sort((a, b) => b.href.length - a.href.length)[0]
+}
+
 export function DashboardChrome({
   businessName,
   ownerEmail,
@@ -93,7 +104,8 @@ export function DashboardChrome({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const activeItem = navGroups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href)) ?? navGroups[0].items[0]
+  const allItems = navGroups.flatMap((group) => group.items)
+  const activeItem = bestMatch(pathname, allItems) ?? navGroups[0].items[0]
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -118,7 +130,7 @@ export function DashboardChrome({
                   <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const Icon = item.icon
-                      const active = isActive(pathname, item.href)
+                      const active = item.href === activeItem.href
 
                       return (
                         <Link

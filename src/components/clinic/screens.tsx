@@ -1240,61 +1240,6 @@ export function DashboardConversationsScreen() {
   )
 }
 
-export function DashboardScheduleScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Calendar</SectionEyebrow>}
-        title="A clean weekly schedule view for the clinic team"
-        description="Visualize appointments by day and keep drag-and-drop rescheduling aligned with clinic hours."
-      />
-      <SurfaceCard className="p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Week view</div>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Apr 26 - May 2, 2026</h2>
-          </div>
-          <div className="flex items-center gap-2">
-            {['month', 'week', 'day'].map((item, index) => (
-              <button
-                key={item}
-                type="button"
-                className={cn(
-                  'rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.2em] transition',
-                  index === 1
-                    ? 'bg-[var(--brand)] text-white shadow-[0_10px_24px_rgba(15,118,110,0.2)]'
-                    : 'bg-white text-[var(--text-muted)] hover:bg-teal-50 hover:text-[var(--text-strong)]',
-                )}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-white">
-          <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day}>{day}</div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-px bg-slate-100">
-            {Array.from({ length: 35 }).map((_, index) => (
-              <div key={index} className={cn('min-h-28 bg-white p-3', index < 7 && 'bg-amber-50/60')}>
-                {index === 16 || index === 17 || index === 18 ? (
-                  <div className="rounded-2xl bg-teal-500 px-3 py-2 text-[11px] font-bold text-white shadow-[0_10px_20px_rgba(15,118,110,0.18)]">
-                    {index === 16 ? '2:30 - 3:00 - Dault Hussain' : index === 17 ? '3:30 - 4:00 - Md Shair' : '4:30 - 5:00 - Follow Up'}
-                  </div>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      </SurfaceCard>
-    </div>
-  )
-}
-
 export function DashboardBillingScreen() {
   return (
     <div className="space-y-8">
