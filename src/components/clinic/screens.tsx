@@ -33,7 +33,6 @@ import {
   FileSearch,
   Globe2,
   Plus,
-  Send,
   Settings2,
   SlidersHorizontal,
   Bell,
@@ -872,57 +871,12 @@ export function DashboardSettingsScreen() {
   )
 }
 
-export function DashboardSupportScreen() {
-  return (
-    <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-      <SurfaceCard className="p-6">
-        <SectionHeading
-          eyebrow={<SectionEyebrow>Support</SectionEyebrow>}
-          title="Tickets and patient requests"
-          description="Collect issues from the portal, widget, or front desk and keep the support thread tied to the appointment."
-        />
-        <div className="mt-6 space-y-3">
-          {[
-            ['Open', 'Appointment reschedule', 'Patient asks to move tomorrow 9 AM visit'],
-            ['Pending', 'Billing receipt', 'USDC payment confirmation requested'],
-            ['Resolved', 'Portal access', 'OTP email delivered successfully'],
-          ].map(([status, subject, body]) => (
-            <div key={subject} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-bold text-[var(--text-strong)]">{subject}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{body}</div>
-                </div>
-                <StatusBadge tone={status === 'Open' ? 'rose' : status === 'Pending' ? 'amber' : 'emerald'}>{status}</StatusBadge>
-              </div>
-            </div>
-          ))}
-        </div>
-      </SurfaceCard>
-
-      <SurfaceCard className="p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Thread</div>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Appointment reschedule</h2>
-          </div>
-          <StatusBadge tone="blue">Live chat</StatusBadge>
-        </div>
-        <div className="mt-5 space-y-4">
-          <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">We need to move the appointment to next week.</div>
-          <div className="ml-auto max-w-[85%] rounded-2xl bg-teal-500 px-4 py-3 text-sm text-white">Absolutely. I can help you reschedule and send the updated confirmation.</div>
-          <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">Please share your preferred time and I will check availability.</div>
-        </div>
-        <div className="mt-6 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-4 text-sm text-[var(--text-muted)]">
-          <div className="flex items-center gap-2">
-            <Send className="h-4 w-4 text-[var(--brand)]" />
-            Compose a reply or escalate to a staff member.
-          </div>
-        </div>
-      </SurfaceCard>
-    </div>
-  )
-}
+// DashboardSupportScreen was removed from here — 3 hardcoded tickets and a
+// static "reschedule" thread with a composer that didn't submit anywhere.
+// A real version now lives in src/components/clinic/SupportManager.tsx,
+// wired to services/support.ts (already existed: tickets + messages +
+// status) — replies actually post to support_messages and status buttons
+// call updateSupportTicketStatus.
 
 export function DashboardNotificationsScreen() {
   const notifications: Array<{
