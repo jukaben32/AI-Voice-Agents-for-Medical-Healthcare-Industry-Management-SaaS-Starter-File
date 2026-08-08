@@ -683,113 +683,14 @@ export function DashboardOverviewScreen() {
   )
 }
 
-export function DashboardAppointmentsScreen() {
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-[28px] border border-white/70 bg-white/90 px-6 py-5 shadow-[0_16px_50px_rgba(15,23,42,0.06)] md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Appointments</div>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-[var(--text-strong)]">Track every booking and status change</h1>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {['All', 'Booked', 'Confirmed', 'Completed', 'Cancelled', 'No show'].map((tab, index) => (
-            <button
-              key={tab}
-              type="button"
-              className={cn(
-                'rounded-full px-4 py-2 text-sm font-semibold transition',
-                index === 0
-                  ? 'bg-[var(--brand)] text-white shadow-[0_10px_24px_rgba(13,148,136,0.22)]'
-                  : 'bg-white text-[var(--text-muted)] hover:bg-teal-50 hover:text-[var(--text-strong)]',
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <SimpleTable
-          columns={['Patient', 'Service', 'Date & time', 'Source', 'Status']}
-          rows={[
-            [
-              <strong key="p1">Md Tajuddin</strong>,
-              'General Consultation',
-              'Apr 30, 2026 4:30 PM',
-              <StatusBadge key="s1" tone="teal">AI Widget</StatusBadge>,
-              <StatusBadge key="st1" tone="blue">Booked</StatusBadge>,
-            ],
-            [
-              <strong key="p2">Shakib</strong>,
-              'Follow Up Visit',
-              'Apr 29, 2026 3:30 PM',
-              <StatusBadge key="s2" tone="teal">Portal</StatusBadge>,
-              <StatusBadge key="st2" tone="emerald">Confirmed</StatusBadge>,
-            ],
-            [
-              <strong key="p3">Amit</strong>,
-              'General Consultation',
-              'Apr 28, 2026 2:30 PM',
-              <StatusBadge key="s3" tone="teal">AI Widget</StatusBadge>,
-              <StatusBadge key="st3" tone="rose">Cancelled</StatusBadge>,
-            ],
-            [
-              <strong key="p4">Dault Hussain</strong>,
-              'General Consultation',
-              'Apr 28, 2026 7:30 PM',
-              <StatusBadge key="s4" tone="blue">Phone</StatusBadge>,
-              <StatusBadge key="st4" tone="amber">No show</StatusBadge>,
-            ],
-          ]}
-        />
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Selected appointment</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">General Consultation</h2>
-            </div>
-            <StatusBadge tone="blue">Booked</StatusBadge>
-          </div>
-          <div className="mt-5 space-y-4 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium text-[var(--text-muted)]">Patient</span>
-              <strong className="text-sm text-[var(--text-strong)]">Md Tajuddin</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium text-[var(--text-muted)]">Time</span>
-              <strong className="text-sm text-[var(--text-strong)]">Apr 30, 2026, 4:30 PM</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium text-[var(--text-muted)]">Source</span>
-              <strong className="text-sm text-[var(--text-strong)]">AI Widget</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium text-[var(--text-muted)]">Payment</span>
-              <strong className="text-sm text-[var(--text-strong)]">Pending</strong>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <ButtonLink href="/dashboard/appointments" icon="check">
-              Confirm
-            </ButtonLink>
-            <ButtonLink href="/dashboard/appointments" variant="secondary" icon="arrow">
-              Mark completed
-            </ButtonLink>
-            <ButtonLink href="/dashboard/appointments" variant="secondary" icon="arrow">
-              No show
-            </ButtonLink>
-            <ButtonLink href="/dashboard/appointments" variant="secondary" icon="arrow">
-              Cancel
-            </ButtonLink>
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardAppointmentsScreen was removed from here — same story: hardcoded
+// rows (Md Tajuddin, Shakib, Amit, Dault Hussain), status filter pills with
+// no onClick, action buttons that were links back to this same page. A real
+// version now lives in src/components/clinic/AppointmentsManager.tsx, wired
+// to services/appointments.ts (listAppointmentsForBusiness) and the already-
+// working POST /api/appointments/status route (which also sends the patient
+// email + creates the in-app notification — reusing it instead of calling
+// updateAppointmentStatus directly keeps that behavior).
 
 export function DashboardWidgetScreen() {
   return (
@@ -881,79 +782,13 @@ export function DashboardWidgetScreen() {
 // setClinicServiceActive via the browser Supabase client (RLS-protected,
 // no dedicated API route needed for this one).
 
-export function DashboardPatientsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Patients</SectionEyebrow>}
-        title="Patient records and appointment history in one place"
-        description="Keep notes, insurance details, and booking context together so the front desk and assistants work from the same data."
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Patient list</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Recent visitors</h2>
-            </div>
-            <ButtonLink href="/dashboard/patients" icon="none">
-              Add patient
-            </ButtonLink>
-          </div>
-          <div className="mt-5 space-y-3">
-            {[
-              ['Md Tajuddin', 'Follow Up Visit', 'Apr 30', 'Cardiology'],
-              ['Shakib', 'General Consultation', 'Apr 29', 'General'],
-              ['Amit', 'General Consultation', 'Apr 28', 'General'],
-              ['Just Funny', 'Follow Up Visit', 'Apr 27', 'Lab review'],
-            ].map(([name, service, date, notes]) => (
-              <div key={name} className="flex items-center justify-between gap-4 rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div>
-                  <div className="text-sm font-bold text-[var(--text-strong)]">{name}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{notes}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-[var(--text-strong)]">{service}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{date}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Patient profile</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Dault Hussain</h2>
-            </div>
-            <StatusBadge tone="emerald">Active</StatusBadge>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            <ValueCard label="Total appointments" value="13" icon={CalendarDays} tone="teal" />
-            <ValueCard label="Completed" value="1" icon={CheckCircle2} tone="emerald" />
-            <ValueCard label="This month" value="13" icon={LineChart} tone="blue" />
-          </div>
-          <div className="mt-6 space-y-3 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--text-muted)]">Allergies</span>
-              <strong className="text-sm text-[var(--text-strong)]">None recorded</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--text-muted)]">Insurance</span>
-              <strong className="text-sm text-[var(--text-strong)]">Self pay</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--text-muted)]">Last visit</span>
-              <strong className="text-sm text-[var(--text-strong)]">Apr 27, 2026</strong>
-            </div>
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardPatientsScreen was removed from here — same story: hardcoded
+// visitor list (Md Tajuddin, Shakib, Amit, "Just Funny"), "Add patient"
+// linked back to this same page, patient profile stats (13 appointments,
+// "Dault Hussain") baked in as literal strings. A real version now lives in
+// src/components/clinic/PatientsManager.tsx, backed by services/patients.ts
+// (listPatientsForBusiness/createPatient) and the appointments already
+// loaded for this business to compute each patient's real visit stats.
 
 export function DashboardSettingsScreen() {
   return (
