@@ -21,7 +21,6 @@ import {
   MessageSquare,
   Mic,
   NotebookText,
-  Phone,
   ShieldCheck,
   Sparkles,
   Stethoscope,
@@ -219,30 +218,6 @@ const portalTimeline = [
   { time: 'Today', title: 'General Consultation', description: '4:30 PM with Dr. Harrington', tone: 'teal' as const },
   { time: 'Tomorrow', title: 'Follow Up Visit', description: 'Payment already processed', tone: 'blue' as const },
   { time: 'Wed', title: 'Lab Results Review', description: 'Portal message ready', tone: 'emerald' as const },
-]
-
-const staffAgents = [
-  {
-    name: 'Clara',
-    role: 'Front desk voice agent',
-    status: 'Live',
-    prompt: 'Warm, professional, concise, and always able to schedule appointments.',
-    calls: '1,284',
-  },
-  {
-    name: 'Orion',
-    role: 'Billing and reminders',
-    status: 'Live',
-    prompt: 'Tracks deposits, reminders, and payment confirmations.',
-    calls: '812',
-  },
-  {
-    name: 'Nova',
-    role: 'Intake and triage',
-    status: 'Paused',
-    prompt: 'Collects symptoms, routes urgent requests, and escalates when needed.',
-    calls: '241',
-  },
 ]
 
 const marketingFaqs = [
@@ -1086,60 +1061,6 @@ export function DashboardNotificationsScreen() {
   )
 }
 
-export function DashboardAgentsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>AI settings</SectionEyebrow>}
-        title="Agents, prompts, and voice tools"
-        description="Use one or more agents for booking, follow-up, billing, and triage. Clara can stay on-brand for the whole clinic."
-      />
-      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="grid gap-4 md:grid-cols-3">
-          {staffAgents.map((agent) => (
-            <SurfaceCard key={agent.name} className="p-5">
-              <div className="flex items-center justify-between gap-3">
-                <StatusBadge tone={agent.status === 'Live' ? 'emerald' : 'amber'}>{agent.status}</StatusBadge>
-                <Bot className="h-5 w-5 text-[var(--brand)]" />
-              </div>
-              <h3 className="mt-4 text-lg font-black tracking-tight text-[var(--text-strong)]">{agent.name}</h3>
-              <div className="mt-1 text-sm text-[var(--text-muted)]">{agent.role}</div>
-              <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">{agent.prompt}</p>
-              <div className="mt-5 flex items-center justify-between text-sm">
-                <span className="text-[var(--text-muted)]">Calls handled</span>
-                <strong className="text-[var(--text-strong)]">{agent.calls}</strong>
-              </div>
-            </SurfaceCard>
-          ))}
-        </div>
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Realtime tools</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">What Clara can do mid-call</h2>
-            </div>
-            <StatusBadge tone="teal">Tool ready</StatusBadge>
-          </div>
-          <div className="mt-6 space-y-3">
-            {[
-              'List clinic services and durations',
-              'Check live availability in clinic timezone',
-              'Create or update patient records',
-              'Book, reschedule, or cancel appointments',
-              'Trigger confirmation and reminder emails',
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-2xl border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3 text-sm text-[var(--text-strong)]">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                {item}
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
-
 export function DashboardAnalyticsScreen() {
   return (
     <div className="space-y-8">
@@ -1308,44 +1229,6 @@ export function DashboardBillingScreen() {
               </div>
             ))}
           </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
-
-export function DashboardAgentDetailScreen({ id }: { id: string }) {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Agent detail</SectionEyebrow>}
-        title={`Agent ${id}`}
-        description="A deeper view for the selected agent profile, prompt, and operational status."
-      />
-      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Profile</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Clara</h2>
-            </div>
-            <StatusBadge tone="emerald">Live</StatusBadge>
-          </div>
-          <div className="mt-5 space-y-4">
-            <ValueCard label="Calls handled" value="1,284" icon={Phone} tone="teal" />
-            <ValueCard label="Bookings" value="418" icon={CalendarDays} tone="blue" />
-            <ValueCard label="Escalations" value="12" icon={LifeBuoy} tone="rose" />
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-6">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Prompt</div>
-          <pre className="mt-4 overflow-auto rounded-[24px] bg-slate-950 p-5 text-sm leading-7 text-teal-100">
-{`You are Clara, the clinic's AI medical receptionist.
-Keep responses short, kind, and confident.
-Collect name, phone, service, date, and time.
-Offer reschedule or cancellation when appropriate.
-Escalate urgent cases to human staff immediately.`}
-          </pre>
         </SurfaceCard>
       </div>
     </div>
