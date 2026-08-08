@@ -47,7 +47,6 @@ import {
   MapPinned,
   Hospital,
   MonitorSmartphone,
-  Check,
   X,
   ShieldAlert,
 } from 'lucide-react'
@@ -202,15 +201,6 @@ const widgetSteps = [
     title: 'Confirm booking',
     detail: 'The appointment is saved, confirmed, and the notification pipeline fires.',
   },
-]
-
-const settingsDays = [
-  { day: 'Sunday', open: '09:00 AM', close: '05:00 PM', breakStart: '12:00 PM', breakEnd: '01:00 PM' },
-  { day: 'Monday', open: '09:00 AM', close: '05:00 PM', breakStart: '12:00 PM', breakEnd: '01:00 PM' },
-  { day: 'Tuesday', open: '09:00 AM', close: '05:00 PM', breakStart: '12:00 PM', breakEnd: '01:00 PM' },
-  { day: 'Wednesday', open: '09:00 AM', close: '05:00 PM', breakStart: '12:00 PM', breakEnd: '01:00 PM' },
-  { day: 'Thursday', open: '09:00 AM', close: '05:00 PM', breakStart: '12:00 PM', breakEnd: '01:00 PM' },
-  { day: 'Friday', open: '09:00 AM', close: '05:00 PM', breakStart: '12:00 PM', breakEnd: '01:00 PM' },
 ]
 
 const portalTimeline = [
@@ -803,73 +793,15 @@ export function DashboardOverviewScreen() {
 // (listPatientsForBusiness/createPatient) and the appointments already
 // loaded for this business to compute each patient's real visit stats.
 
-export function DashboardSettingsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Settings</SectionEyebrow>}
-        title="Set clinic hours and blocked dates"
-        description="The assistant checks these rules before showing slots so the widget always reflects the real availability."
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Weekly schedule</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Open hours and breaks</h2>
-            </div>
-            <StatusBadge tone="teal">Saved</StatusBadge>
-          </div>
-          <div className="mt-6 space-y-3">
-            {settingsDays.map((day) => (
-              <div key={day.day} className="rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-2xl bg-teal-500 text-white">
-                      <Check className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-[var(--text-strong)]">{day.day}</div>
-                      <div className="text-xs text-[var(--text-muted)]">
-                        Open {day.open} - {day.close} with lunch break {day.breakStart} - {day.breakEnd}
-                      </div>
-                    </div>
-                  </div>
-                  <ButtonLink href="/dashboard/settings" variant="secondary" icon="none">
-                    Save
-                  </ButtonLink>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Blocked dates</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Holiday and closure management</h2>
-            </div>
-            <StatusBadge tone="rose">0 blocked</StatusBadge>
-          </div>
-          <div className="mt-6 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
-            <div className="grid gap-3 sm:grid-cols-[0.8fr_1.2fr_auto]">
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">dd/mm/yyyy</div>
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">Reason (optional)</div>
-              <ButtonLink href="/dashboard/settings" icon="none">
-                Block date
-              </ButtonLink>
-            </div>
-            <div className="mt-6 rounded-[20px] border border-dashed border-[var(--border-soft)] bg-white px-4 py-10 text-center text-sm text-[var(--text-muted)]">
-              No dates blocked. Add a holiday or clinic closure above.
-            </div>
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// DashboardSettingsScreen was removed from here — hours/breaks were plain
+// text (not inputs), "Save" and "Block date" were links back to this same
+// page, and "0 blocked" was a fixed literal. A real version now lives in
+// src/components/clinic/SettingsManager.tsx, wired to services/business.ts
+// (updateBusiness, getBusinessAvailability/upsertBusinessAvailability,
+// getClosedDates/addClosedDate/removeClosedDate — all already existed).
+// Fixed a real bug along the way: upsertBusinessAvailability/addClosedDate
+// upserted without an onConflict target, so saving the same day/date twice
+// would throw a duplicate-key error instead of updating.
 
 // DashboardSupportScreen was removed from here — 3 hardcoded tickets and a
 // static "reschedule" thread with a composer that didn't submit anywhere.
