@@ -22,6 +22,7 @@ import {
   Bot,
   LineChart,
   Globe2,
+  User,
 } from 'lucide-react'
 
 import { BrandMark } from '@/components/clinic/shared'
@@ -72,6 +73,7 @@ const navGroups: readonly NavGroup[] = [
       { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
       { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
       { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
+      { href: '/dashboard/profile', label: 'My Profile', icon: User },
     ],
   },
 ]
