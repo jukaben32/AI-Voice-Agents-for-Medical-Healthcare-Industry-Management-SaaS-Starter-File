@@ -13,29 +13,41 @@ begin
 end;
 $$;
 
+-- These three are `language plpgsql` rather than the more idiomatic
+-- `language sql` on purpose: `language sql` functions are validated against
+-- the catalog (tables must already exist) at CREATE FUNCTION time, but
+-- businesses/business_members/patients aren't created until further down
+-- this same file — running the file top-to-bottom failed immediately with
+-- `relation "businesses" does not exist` before a single table was ever
+-- created. plpgsql only compiles the body lazily (checked on first call,
+-- by which point every table below has been created), so it tolerates the
+-- forward reference without needing to reorder the whole file.
 create or replace function is_business_owner(target_business_id uuid)
 returns boolean
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select exists (
+begin
+  return exists (
     select 1
     from businesses
     where id = target_business_id
       and owner_id = auth.uid()
   );
+end;
 $$;
 
 create or replace function has_business_access(target_business_id uuid)
 returns boolean
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select exists (
+begin
+  return exists (
     select 1
     from businesses
     where id = target_business_id
@@ -47,21 +59,24 @@ as $$
     where business_id = target_business_id
       and user_id = auth.uid()
   );
+end;
 $$;
 
 create or replace function is_patient_owner(target_patient_id uuid)
 returns boolean
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select exists (
+begin
+  return exists (
     select 1
     from patients
     where id = target_patient_id
       and auth_user_id = auth.uid()
   );
+end;
 $$;
 
 -- 1. BUSINESSES / CLINICS
