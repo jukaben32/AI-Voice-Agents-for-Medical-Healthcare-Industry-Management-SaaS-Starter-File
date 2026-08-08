@@ -865,76 +865,11 @@ export function DashboardWidgetScreen() {
   )
 }
 
-export function DashboardWebsiteScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Website builder</SectionEyebrow>}
-        title="A public site that feels premium and converts"
-        description="Show the doctor profile, services, testimonials, and a strong booking CTA. The widget and website stay on brand."
-      />
-
-      <BrowserFrame title="Website preview" subtitle="Public landing page for the clinic" accent="blue">
-        <div className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <SurfaceCard className="bg-slate-950 p-7 text-white">
-            <Pill tone="rose">Board-certified interventional cardiologist</Pill>
-            <h2 className="mt-5 text-5xl font-black tracking-tight sm:text-6xl">
-              Advanced
-              <span className="block text-rose-300">Heart Care</span>
-              You Can Trust
-            </h2>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-white/74">
-              Compasionate care, advanced expertise, and an AI assistant that can book appointments directly from the website.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <ButtonLink href="/dashboard/widget" icon="calendar">
-                Schedule consultation
-              </ButtonLink>
-              <ButtonLink href="/dashboard/website" variant="secondary" icon="arrow">
-                View services
-              </ButtonLink>
-            </div>
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <ValueCard label="Years experience" value="20+" icon={HeartPulse} tone="rose" />
-              <ValueCard label="Patients served" value="12,000+" icon={Users} tone="blue" />
-              <ValueCard label="Success rate" value="98.6%" icon={CheckCircle2} tone="emerald" />
-            </div>
-          </SurfaceCard>
-          <SurfaceCard className="p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Templates</div>
-                <h3 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Serenity, Pulse, and Clarity</h3>
-              </div>
-              <StatusBadge tone="blue">Published</StatusBadge>
-            </div>
-            <div className="mt-5 grid gap-3">
-              {[
-                { name: 'Serenity', body: 'Soft gradients, calm hero, and strong appointment CTA', tone: 'teal' as const },
-                { name: 'Pulse', body: 'More contrast for specialty practices and premium positioning', tone: 'rose' as const },
-                { name: 'Clarity', body: 'Minimal layout with more clinical trust and less decoration', tone: 'blue' as const },
-              ].map((item) => (
-                <div key={item.name} className="rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-bold text-[var(--text-strong)]">{item.name}</div>
-                      <div className="text-xs text-[var(--text-muted)]">{item.body}</div>
-                    </div>
-                    <StatusBadge tone={item.tone}>Ready</StatusBadge>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <PriceBlock label="Widget enabled" amount={1} helper="Embedded on the site and portal" />
-              <PriceBlock label="Featured services" amount={3} helper="Pulled from clinic services" />
-            </div>
-          </SurfaceCard>
-        </div>
-      </BrowserFrame>
-    </div>
-  )
-}
+// DashboardWebsiteScreen was removed from here — it was a static preview
+// mockup with fake copy ("Heart Care You Can Trust") and no connection to
+// the real websites table. A real, functional editor now lives in
+// src/components/clinic/WebsiteEditor.tsx, wired to the already-working
+// /api/website/save, /publish, and /upload-image routes.
 
 export function DashboardServicesScreen() {
   return (
