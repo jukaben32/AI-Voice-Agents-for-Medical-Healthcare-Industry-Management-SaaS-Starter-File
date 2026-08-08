@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import {
   Activity,
   ArrowRight,
-  CalendarClock,
   CalendarDays,
   CheckCircle2,
   Clock3,
@@ -59,7 +58,6 @@ import { cn } from '@/lib/utils'
 
 import {
   ArrowLink,
-  AvatarStack,
   BrandMark,
   BrowserFrame,
   ButtonLink,
@@ -67,7 +65,6 @@ import {
   MetricCard,
   PhoneFrame,
   Pill,
-  PriceBlock,
   ProgressRail,
   QuoteCard,
   SectionEyebrow,
@@ -248,80 +245,113 @@ const staffAgents = [
   },
 ]
 
+const marketingFaqs = [
+  {
+    q: 'How long does setup take?',
+    a: 'Most clinics are live with services, availability, and the AI voice agent configured in under a week.',
+  },
+  {
+    q: 'Does the AI agent replace my front desk?',
+    a: 'No — it complements it. Clara handles after-hours calls, demand spikes, and repetitive questions, then hands off to your team when needed.',
+  },
+  {
+    q: 'Can I run more than one clinic from one account?',
+    a: 'Yes. Every location gets its own calendar, services, and dashboard, with row-level isolation between clinics.',
+  },
+  {
+    q: 'How is patient data protected?',
+    a: 'Encryption in transit and at rest, scoped role-based access, and audit-friendly records aligned with HIPAA-ready practices.',
+  },
+  {
+    q: 'Do I need to install anything?',
+    a: 'No — Clara AI runs entirely in the browser and embeds into your site with a single script tag.',
+  },
+]
+
 function heroPreview() {
   return (
-    <BrowserFrame title="Clinic dashboard" subtitle="Live bookings, schedules, and patient operations" accent="teal">
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <SurfaceCard className="p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">Live dashboard</div>
-              <div className="mt-1 text-lg font-black text-[var(--text-strong)]">Good evening, Dr. Harrington</div>
-            </div>
-            <StatusBadge tone="teal">Online</StatusBadge>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <MetricCard label="Today" value="2" delta="Scheduled today" icon={CalendarDays} tone="teal" />
-            <MetricCard label="Upcoming" value="7" delta="Booked & confirmed" icon={Clock3} tone="blue" />
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-bold text-[var(--text-strong)]">Upcoming appointments</div>
-            <ArrowLink href="/dashboard/appointments">See all</ArrowLink>
-          </div>
-          <div className="mt-4 space-y-3">
-            {upcomingAppointments.slice(0, 4).map((item) => (
-              <div key={item.name} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
+    <div className="relative">
+      <div className="plate-corners relative border border-[var(--border-soft)] bg-[var(--panel)] shadow-[3px_3px_0_0_var(--border-soft)]">
+        <BrowserFrame title="Clinic dashboard" subtitle="Live bookings, schedules, and patient operations">
+          <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+            <SurfaceCard className="p-5">
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-bold text-[var(--text-strong)]">{item.name}</div>
-                  <div className="text-xs text-[var(--text-muted)]">{item.note}</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">Live dashboard</div>
+                  <div className="mt-1 text-lg font-bold text-[var(--text-strong)]">Good evening, Dr. Harrington</div>
                 </div>
-                <StatusBadge tone={item.tone}>Booked</StatusBadge>
+                <StatusBadge tone="teal">Online</StatusBadge>
               </div>
-            ))}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <MetricCard label="Today" value="2" delta="Scheduled today" icon={CalendarDays} tone="teal" />
+                <MetricCard label="Upcoming" value="7" delta="Booked & confirmed" icon={Clock3} tone="blue" />
+              </div>
+            </SurfaceCard>
+            <SurfaceCard className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-bold text-[var(--text-strong)]">Upcoming appointments</div>
+                <ArrowLink href="/dashboard/appointments">See all</ArrowLink>
+              </div>
+              <div className="mt-4 space-y-3">
+                {upcomingAppointments.slice(0, 4).map((item) => (
+                  <div key={item.name} className="flex items-center justify-between gap-3 border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
+                    <div>
+                      <div className="text-sm font-bold text-[var(--text-strong)]">{item.name}</div>
+                      <div className="text-xs text-[var(--text-muted)]">{item.note}</div>
+                    </div>
+                    <StatusBadge tone={item.tone}>Booked</StatusBadge>
+                  </div>
+                ))}
+              </div>
+            </SurfaceCard>
           </div>
-        </SurfaceCard>
+        </BrowserFrame>
       </div>
-    </BrowserFrame>
+      <div className="absolute -bottom-6 -left-6 hidden w-[210px] border border-[var(--border-soft)] bg-[var(--panel)] p-4 shadow-[3px_3px_0_0_var(--border-soft)] sm:block">
+        <div className="font-display text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--brand)' }}>Live</div>
+        <div className="mt-1 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">12,400+</div>
+        <div className="text-xs text-[var(--text-muted)]">patients managed this month</div>
+      </div>
+    </div>
   )
 }
 
 export function MarketingHomeScreen() {
   return (
-    <div className="relative overflow-hidden bg-[var(--page-bg)]">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.18),transparent_36%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.9),rgba(243,249,249,1))]" />
-      <div className="absolute inset-x-0 top-0 -z-10 h-[500px] bg-[linear-gradient(135deg,rgba(13,148,136,0.10),rgba(255,255,255,0))]" />
-
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
-        <BrandMark />
-        <nav className="hidden items-center gap-8 text-sm font-semibold text-[var(--text-muted)] lg:flex">
-          <a href="#features" className="transition hover:text-[var(--text-strong)]">Platform</a>
-          <a href="#workflow" className="transition hover:text-[var(--text-strong)]">How it works</a>
-          <a href="#widgets" className="transition hover:text-[var(--text-strong)]">Widget</a>
-          <a href="#portal" className="transition hover:text-[var(--text-strong)]">Portal</a>
-          <a href="#pricing" className="transition hover:text-[var(--text-strong)]">Pricing</a>
-        </nav>
-        <div className="flex items-center gap-3">
-          <ButtonLink href="/login" variant="secondary" icon="none">
-            Sign in
-          </ButtonLink>
-          <ButtonLink href="/signup" icon="calendar">
-            Start free trial
-          </ButtonLink>
+    <div className="bg-[var(--page-bg)]">
+      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-[var(--page-bg)]/90 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-8 px-6 py-4 lg:px-8">
+          <div className="mr-auto">
+            <BrandMark compact />
+          </div>
+          <nav className="hidden items-center gap-7 text-sm font-medium text-[var(--text-strong)] lg:flex">
+            <a href="#features" className="transition hover:text-[var(--brand-strong)]">Platform</a>
+            <a href="#workflow" className="transition hover:text-[var(--brand-strong)]">How it works</a>
+            <a href="#portal" className="transition hover:text-[var(--brand-strong)]">Portal</a>
+            <a href="#pricing" className="transition hover:text-[var(--brand-strong)]">Pricing</a>
+            <a href="#faq" className="transition hover:text-[var(--brand-strong)]">FAQ</a>
+          </nav>
+          <div className="flex items-center gap-3">
+            <ButtonLink href="/login" variant="secondary" icon="none">
+              Sign in
+            </ButtonLink>
+            <ButtonLink href="/signup" icon="calendar">
+              Start free trial
+            </ButtonLink>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-24 px-6 pb-24 pt-8 lg:px-8">
-        <section className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr]">
-          <div className="max-w-2xl">
+      <main>
+        <section id="producto" className="mx-auto grid w-full max-w-7xl items-center gap-14 px-6 py-20 lg:grid-cols-[1.02fr_0.98fr] lg:px-8">
+          <div className="max-w-xl">
             <SectionEyebrow>AI medical receptionist</SectionEyebrow>
-            <h1 className="mt-6 text-5xl font-black tracking-tight text-[var(--text-strong)] sm:text-6xl lg:text-7xl">
-              Let AI Handle Your Appointment Bookings Automatically
+            <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-[var(--text-strong)] sm:text-6xl">
+              Every clinic, an AI agent that never drops the call.
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-[var(--text-muted)]">
-              Clara answers patients by voice or chat, books appointments, confirms visits,
-              sends reminders, and keeps the clinic dashboard in sync in real time.
+            <p className="mt-6 max-w-lg text-lg leading-8 text-[var(--text-muted)]">
+              Clara AI centralizes appointments, patients, billing, and a voice agent in one dashboard —
+              so your front desk does less and your patients wait less.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <ButtonLink href="/signup" icon="calendar">
@@ -332,16 +362,20 @@ export function MarketingHomeScreen() {
               </ButtonLink>
             </div>
 
-            <div className="mt-8 flex flex-wrap items-center gap-5">
-              <AvatarStack names={['Dr. Sarah Mitchell', 'Dr. James Park', 'Dr. Maria Santos']} label="Loved by healthcare teams" />
-              <div className="flex items-center gap-3 rounded-full border border-white/70 bg-white/80 px-4 py-2 shadow-[0_12px_30px_rgba(15,23,42,0.06)]">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-teal-500 text-white">
-                  <ShieldCheck className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[var(--text-strong)]">HIPAA-ready workflows</div>
-                  <div className="text-xs text-[var(--text-muted)]">Secure by design for every clinic</div>
-                </div>
+            <div className="mt-10 flex flex-wrap items-center gap-6 border-t border-[var(--border-soft)] pt-7">
+              <div>
+                <div className="font-display text-2xl font-bold text-[var(--text-strong)]">120+</div>
+                <div className="text-xs text-[var(--text-muted)]">active clinics</div>
+              </div>
+              <div className="h-8 w-px bg-[var(--border-soft)]" />
+              <div>
+                <div className="font-display text-2xl font-bold text-[var(--text-strong)]">98.6%</div>
+                <div className="text-xs text-[var(--text-muted)]">satisfaction</div>
+              </div>
+              <div className="h-8 w-px bg-[var(--border-soft)]" />
+              <div>
+                <div className="font-display text-2xl font-bold text-[var(--text-strong)]">24/7</div>
+                <div className="text-xs text-[var(--text-muted)]">voice agent</div>
               </div>
             </div>
           </div>
@@ -349,181 +383,216 @@ export function MarketingHomeScreen() {
           {heroPreview()}
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <ValueCard label="Clinics onboarded" value="120+" subtitle="Private practices and specialty clinics" icon={Hospital} tone="teal" />
-          <ValueCard label="Bookings managed" value="48k" subtitle="Appointments confirmed without manual calls" icon={CalendarClock} tone="blue" />
-          <ValueCard label="Average no-show drop" value="33%" subtitle="After reminders and self-service tools" icon={LineChart} tone="emerald" />
-          <ValueCard label="USDC transactions" value="$2.4M" subtitle="Tracked on Polygon with transaction links" icon={CircleDollarSign} tone="rose" />
-        </section>
-
-        <section id="workflow" className="space-y-8">
-          <SectionHeading
-            eyebrow={<SectionEyebrow>How it works</SectionEyebrow>}
-            title="From website visit to confirmed appointment in under 10 minutes"
-            description="The clinic sets up its services and schedule once. Clara handles the rest across the widget, portal, and dashboard."
-          />
-          <div className="grid gap-6 lg:grid-cols-3">
-            {workflow.map((item) => (
-              <FeatureCard
-                key={item.title}
-                icon={item.icon}
-                title={`${item.step}. ${item.title}`}
-                body={item.body}
-                tone="teal"
-              />
+        <section style={{ background: 'var(--surface-dark)' }}>
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-y-8 px-6 py-14 lg:grid-cols-4 lg:px-8">
+            {[
+              { value: '67%', label: 'appointment completion rate' },
+              { value: '-33%', label: 'no-shows after AI reminders' },
+              { value: '13', label: 'average active patients per clinic' },
+              { value: '6 min', label: 'average time to activate a service' },
+            ].map((stat, index) => (
+              <div key={stat.label} className={cn('px-6', index > 0 && 'border-l border-white/18')}>
+                <div className="font-display text-4xl font-bold text-white">{stat.value}</div>
+                <div className="mt-1.5 text-[13px] text-white/62">{stat.label}</div>
+              </div>
             ))}
           </div>
         </section>
 
-        <section id="features" className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr]">
-          <div className="space-y-4">
+        <section id="features" className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
+          <div className="max-w-xl">
+            <SectionEyebrow>Platform</SectionEyebrow>
+            <h2 className="mt-4 font-display text-4xl font-bold tracking-tight text-[var(--text-strong)]">
+              Everything a modern clinic needs, on one dashboard
+            </h2>
+            <p className="mt-3 text-[var(--text-muted)]">
+              Six connected modules: what the voice agent books shows up instantly in the calendar, patient records, and billing.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-px border border-[var(--border-soft)] bg-[var(--border-soft)] sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => (
+              <div key={feature.title} className="bg-[var(--page-bg)] p-7">
+                <feature.icon className="h-6 w-6" style={{ color: 'var(--brand)' }} />
+                <h3 className="mt-4 font-display text-lg font-semibold tracking-tight text-[var(--text-strong)]">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">{feature.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="workflow" className="mx-auto w-full max-w-7xl px-6 pb-24 lg:px-8">
+          <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="plate-corners relative aspect-[4/5] border border-[var(--border-soft)] bg-[var(--brand-soft)]">
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+                <ShieldCheck className="h-9 w-9" style={{ color: 'var(--brand-strong)' }} />
+                <div className="font-display text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--brand-strong)' }}>
+                  HIPAA-ready workflows
+                </div>
+              </div>
+            </div>
+            <div>
+              <SectionEyebrow>Why Clara AI</SectionEyebrow>
+              <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-[var(--text-strong)] sm:text-4xl">
+                Built for clinics that can&rsquo;t afford to miss a call
+              </h2>
+              <div className="mt-7 flex flex-col gap-5">
+                {workflow.map((item) => (
+                  <div key={item.title} className="flex gap-4">
+                    <item.icon className="mt-0.5 h-5 w-5 shrink-0" style={{ color: 'var(--brand)' }} />
+                    <div>
+                      <div className="text-[15px] font-semibold text-[var(--text-strong)]">{item.step}. {item.title}</div>
+                      <div className="mt-1 text-sm leading-6 text-[var(--text-muted)]">{item.body}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8 grid grid-cols-3 gap-px border border-[var(--border-soft)] bg-[var(--border-soft)]">
+                {[
+                  { icon: ShieldCheck, label: 'HIPAA-ready encryption' },
+                  { icon: Clock3, label: '99.9% uptime' },
+                  { icon: Users, label: 'Dedicated support' },
+                ].map((item) => (
+                  <div key={item.label} className="bg-[var(--page-bg)] p-4 text-center">
+                    <item.icon className="mx-auto h-5 w-5" style={{ color: 'var(--brand)' }} />
+                    <div className="mt-2 font-display text-[13px] font-semibold text-[var(--text-strong)]">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="portal" className="border-y border-[var(--border-soft)]" style={{ background: 'var(--panel-soft)' }}>
+          <div className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
+            <div className="max-w-xl">
+              <SectionEyebrow>Patient portal &amp; widget</SectionEyebrow>
+              <h2 className="mt-4 font-display text-4xl font-bold tracking-tight text-[var(--text-strong)]">
+                Self-service booking, payments, and support
+              </h2>
+            </div>
+            <div className="mt-10 grid gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+              <SurfaceCard className="p-6">
+                <SectionEyebrow>Patient portal</SectionEyebrow>
+                <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">
+                  Reschedule, cancel, and pay without calling the front desk
+                </h3>
+                <div className="mt-6 space-y-4">
+                  <TimelineList items={portalTimeline} />
+                </div>
+              </SurfaceCard>
+
+              <SurfaceCard className="p-6 lg:p-7">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <SectionEyebrow>Widget preview</SectionEyebrow>
+                    <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">
+                      A booking experience patients will actually use
+                    </h3>
+                  </div>
+                  <StatusBadge tone="teal">Live</StatusBadge>
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                  <PhoneFrame title="Clara AI" subtitle="AI Assistant Online">
+                    <div className="space-y-3">
+                      <div className="border border-[var(--border-soft)] bg-[var(--brand-soft)] px-4 py-3 text-sm text-[var(--brand-strong)]">
+                        Welcome back. How can I help you book or manage an appointment today?
+                      </div>
+                      <div className="space-y-2">
+                        {services.map((service) => (
+                          <div key={service.name} className="border border-[var(--border-soft)] px-4 py-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <div className="text-sm font-bold text-[var(--text-strong)]">{service.name}</div>
+                                <div className="text-xs text-[var(--text-muted)]">{service.duration}</div>
+                              </div>
+                              <span className="text-xs font-semibold text-[var(--brand)]">{service.price}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PhoneFrame>
+                </div>
+              </SurfaceCard>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
+          <SectionHeading
+            eyebrow={<SectionEyebrow>Clients</SectionEyebrow>}
+            title="What clinics already using it say"
+            align="center"
+          />
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {testimonials.map((item) => (
+              <QuoteCard key={item.author} quote={item.quote} author={item.author} role={item.role} />
+            ))}
+          </div>
+        </section>
+
+        <section id="pricing" className="border-t border-[var(--border-soft)]" style={{ background: 'var(--panel-soft)' }}>
+          <div className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
             <SectionHeading
-              eyebrow={<SectionEyebrow>Platform</SectionEyebrow>}
-              title="Everything a modern clinic needs in one place"
-              description="Reception, booking, follow-ups, billing, analytics, and patient support live in the same operating system."
+              eyebrow={<SectionEyebrow>Pricing</SectionEyebrow>}
+              title="Clear plans for clinics at every stage"
+              description="The first phase focuses on the widget, clinic dashboard, patient portal, and USDC billing. Stripe can be added later if you want it."
+              align="center"
             />
-            <div className="grid gap-4 md:grid-cols-2">
-              {features.map((feature) => (
-                <FeatureCard
-                  key={feature.title}
-                  icon={feature.icon}
-                  title={feature.title}
-                  body={feature.body}
-                  tone={feature.tone}
-                />
+            <div className="mt-10 grid gap-px border border-[var(--border-soft)] bg-[var(--border-soft)] lg:grid-cols-4">
+              {[
+                { name: 'Free', price: '$0', body: 'Sandbox, demo data, and widget preview.' },
+                { name: 'Starter', price: '$49', body: 'Single clinic with calendar, widget, and portal.' },
+                { name: 'Professional', price: '$99', body: 'Automation, analytics, billing, and AI tools.', featured: true },
+                { name: 'Enterprise', price: '$299', body: 'Multi-clinic, custom integrations, and dedicated support.' },
+              ].map((plan) => (
+                <div key={plan.name} className="relative bg-[var(--page-bg)] p-6" style={plan.featured ? { boxShadow: 'inset 0 0 0 1px var(--brand)' } : undefined}>
+                  {plan.featured ? <Pill tone="teal" className="mb-3">Most popular</Pill> : null}
+                  <div className="text-sm font-bold text-[var(--text-strong)]">{plan.name}</div>
+                  <div className="mt-3 font-display text-4xl font-bold tracking-tight text-[var(--text-strong)]">{plan.price}</div>
+                  <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">{plan.body}</p>
+                </div>
               ))}
             </div>
           </div>
-
-          <SurfaceCard className="p-6 lg:p-7">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <SectionEyebrow>Widget preview</SectionEyebrow>
-                <h3 className="mt-3 text-2xl font-black tracking-tight text-[var(--text-strong)]">
-                  A polished booking experience patients will actually use
-                </h3>
-              </div>
-              <StatusBadge tone="rose">Live</StatusBadge>
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <PhoneFrame title="Clara AI" subtitle="AI Assistant Online" accent="rose">
-                <div className="space-y-3">
-                  <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    Welcome back. How can I help you book or manage an appointment today?
-                  </div>
-                  <div className="space-y-2">
-                    {services.map((service) => (
-                      <div key={service.name} className="rounded-2xl border border-[var(--border-soft)] px-4 py-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-bold text-[var(--text-strong)]">{service.name}</div>
-                            <div className="text-xs text-[var(--text-muted)]">{service.duration}</div>
-                          </div>
-                          <span className="text-xs font-semibold text-[var(--brand)]">{service.price}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </PhoneFrame>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              <PriceBlock label="Booking deposit" amount={49} currency="USD" helper="Simple patient-facing payments" />
-              <PriceBlock label="Clinic tier" amount={99} currency="USD" helper="Website + widget + AI receptionist" />
-              <PriceBlock label="Enterprise" amount={299} currency="USD" helper="Multi-clinic and advanced analytics" />
-            </div>
-          </SurfaceCard>
         </section>
 
-        <section id="portal" className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr]">
-          <SurfaceCard className="p-6">
-            <SectionEyebrow>Patient portal</SectionEyebrow>
-            <h3 className="mt-3 text-2xl font-black tracking-tight text-[var(--text-strong)]">
-              Self-service for booking, rescheduling, payments, and support
-            </h3>
-            <div className="mt-6 space-y-4">
-              <TimelineList items={portalTimeline} />
-            </div>
-          </SurfaceCard>
-
-          <BrowserFrame title="Clinic website" subtitle="Public site, booking CTA, and AI widget" accent="blue">
-            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-              <SurfaceCard className="bg-slate-950 p-6 text-white">
-                <Pill tone="rose">Top doctor 2022-2024</Pill>
-                <h3 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">
-                  Advanced
-                  <span className="block text-rose-300">Heart Care</span>
-                  You Can Trust
-                </h3>
-                <p className="mt-4 max-w-md text-sm leading-7 text-white/74">
-                  A modern clinic website with services, social proof, booking CTA, and embedded Clara widget.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <ButtonLink href="/sites/clinic-demo" icon="calendar">
-                    Schedule Consultation
-                  </ButtonLink>
-                  <ButtonLink href="/widget-demo" variant="secondary" icon="arrow">
-                    View Services
-                  </ButtonLink>
-                </div>
-              </SurfaceCard>
-              <SurfaceCard className="p-5">
-                <div className="space-y-3">
-                  {testimonials.map((item) => (
-                    <QuoteCard key={item.author} quote={item.quote} author={item.author} role={item.role} />
-                  ))}
-                </div>
-              </SurfaceCard>
-            </div>
-          </BrowserFrame>
-        </section>
-
-        <section id="pricing" className="space-y-8">
-          <SectionHeading
-            eyebrow={<SectionEyebrow>Pricing</SectionEyebrow>}
-            title="Clear plans for clinics at every stage"
-            description="The first phase focuses on the widget, clinic dashboard, patient portal, and USDC billing. Stripe can be added later if you want it."
-            align="center"
-          />
-          <div className="grid gap-5 lg:grid-cols-4">
-            <SurfaceCard className="p-6">
-              <div className="text-sm font-bold text-[var(--text-strong)]">Free</div>
-              <div className="mt-3 text-4xl font-black tracking-tight text-[var(--text-strong)]">$0</div>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">Sandbox, demo data, and widget preview.</p>
-            </SurfaceCard>
-            <SurfaceCard className="p-6">
-              <div className="text-sm font-bold text-[var(--text-strong)]">Starter</div>
-              <div className="mt-3 text-4xl font-black tracking-tight text-[var(--text-strong)]">$49</div>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">Single clinic with calendar, widget, and portal.</p>
-            </SurfaceCard>
-            <SurfaceCard className="p-6 ring-1 ring-teal-200">
-              <Pill tone="teal">Most popular</Pill>
-              <div className="mt-3 text-sm font-bold text-[var(--text-strong)]">Professional</div>
-              <div className="mt-3 text-4xl font-black tracking-tight text-[var(--text-strong)]">$99</div>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">Automation, analytics, billing, and AI tools.</p>
-            </SurfaceCard>
-            <SurfaceCard className="p-6">
-              <div className="text-sm font-bold text-[var(--text-strong)]">Enterprise</div>
-              <div className="mt-3 text-4xl font-black tracking-tight text-[var(--text-strong)]">$299</div>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">Multi-clinic, custom integrations, and dedicated support.</p>
-            </SurfaceCard>
+        <section id="faq" className="mx-auto w-full max-w-3xl px-6 py-24 lg:px-8">
+          <div className="max-w-xl">
+            <SectionEyebrow>Frequently asked</SectionEyebrow>
+            <h2 className="mt-4 font-display text-4xl font-bold tracking-tight text-[var(--text-strong)]">Before you book a demo</h2>
+          </div>
+          <div className="mt-10 border-t border-[var(--border-soft)]">
+            {marketingFaqs.map((item) => (
+              <details key={item.q} className="group border-b border-[var(--border-soft)] py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-[17px] font-semibold text-[var(--text-strong)]">
+                  {item.q}
+                  <Plus className="h-4 w-4 shrink-0 transition group-open:rotate-45" style={{ color: 'var(--brand)' }} />
+                </summary>
+                <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--text-muted)]">{item.a}</p>
+              </details>
+            ))}
           </div>
         </section>
 
-        <section className="rounded-[36px] border border-[var(--border-soft)] bg-slate-950 px-6 py-10 text-white shadow-[0_24px_80px_rgba(15,23,42,0.16)] md:px-10">
-          <div className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr] lg:items-center">
+        <section style={{ background: 'var(--surface-dark)' }}>
+          <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-24 text-white lg:grid-cols-2 lg:px-8">
             <div>
               <SectionEyebrow>Launch ready</SectionEyebrow>
-              <h3 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+              <h2 className="mt-5 font-display text-4xl font-bold tracking-tight sm:text-5xl">
                 Ready to transform your practice?
-              </h3>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-white/75">
-                Bring the widget, portal, dashboard, and AI receptionist online in one system. We already wired the backend, so this frontend now matches the product story.
+              </h2>
+              <p className="mt-4 max-w-md text-sm leading-7 text-white/70">
+                Bring the widget, portal, dashboard, and AI receptionist online in one system, configured with your real services.
               </p>
+              <div className="mt-7 flex flex-col gap-2.5 text-sm">
+                <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand-soft)' }} />No card required for the trial</div>
+                <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand-soft)' }} />Calendar migration included</div>
+                <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand-soft)' }} />Support in English &amp; Spanish, 24/7</div>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3 lg:justify-end">
+            <div className="plate-corners relative flex flex-col items-start justify-center gap-4 border border-white/24 p-9">
               <ButtonLink href="/signup" icon="calendar">
                 Start Free Trial
               </ButtonLink>
@@ -534,6 +603,43 @@ export function MarketingHomeScreen() {
           </div>
         </section>
       </main>
+
+      <footer className="border-t border-[var(--border-soft)]">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-14 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
+          <div>
+            <BrandMark compact />
+            <p className="mt-3.5 max-w-[240px] text-[13px] leading-6 text-[var(--text-muted)]">
+              Calendar, patients, billing, and an AI voice agent — one dashboard for your clinic network.
+            </p>
+          </div>
+          <div>
+            <div className="font-display text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">Product</div>
+            <div className="mt-3.5 flex flex-col gap-2.5 text-sm">
+              <a href="#features" className="hover:text-[var(--brand-strong)]">Platform</a>
+              <a href="#pricing" className="hover:text-[var(--brand-strong)]">Pricing</a>
+              <a href="/widget-demo" className="hover:text-[var(--brand-strong)]">Widget demo</a>
+            </div>
+          </div>
+          <div>
+            <div className="font-display text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">Company</div>
+            <div className="mt-3.5 flex flex-col gap-2.5 text-sm">
+              <a href="#portal" className="hover:text-[var(--brand-strong)]">Patient portal</a>
+              <a href="#faq" className="hover:text-[var(--brand-strong)]">FAQ</a>
+              <a href="/login" className="hover:text-[var(--brand-strong)]">Sign in</a>
+            </div>
+          </div>
+          <div>
+            <div className="font-display text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">Legal</div>
+            <div className="mt-3.5 flex flex-col gap-2.5 text-sm">
+              <a href="#" className="hover:text-[var(--brand-strong)]">Privacy</a>
+              <a href="#" className="hover:text-[var(--brand-strong)]">Terms</a>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-[var(--border-soft)] px-6 py-5 text-xs text-[var(--text-muted)] lg:px-8">
+          <div className="mx-auto w-full max-w-7xl">© {new Date().getFullYear()} Clara AI. All rights reserved.</div>
+        </div>
+      </footer>
     </div>
   )
 }

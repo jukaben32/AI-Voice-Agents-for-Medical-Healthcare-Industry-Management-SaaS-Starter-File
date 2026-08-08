@@ -27,6 +27,10 @@
     --teal-soft: #dce6ee;
     --border-soft: #d8d8d9;
     --border-strong: rgba(89, 128, 166, 0.5);
+    /* Dark desaturated-accent surface used for the sidebar and inverted
+       plate sections (stats band, contact band) — same family as --brand,
+       not a separate decorative color. */
+    --surface-dark: #1d2d3d;
   }
 
   * {
@@ -185,7 +189,7 @@
   }
 
   .gradient-sidebar {
-    background: #1d1f20;
+    background: var(--surface-dark);
   }
 
   .gradient-teal {

@@ -24,7 +24,7 @@ import {
   Globe2,
 } from 'lucide-react'
 
-import { BrandMark, StatusBadge } from '@/components/clinic/shared'
+import { BrandMark } from '@/components/clinic/shared'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 
@@ -96,19 +96,19 @@ export function DashboardChrome({
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden gradient-mesh text-[var(--text-strong)]">
-      <div className="mx-auto flex min-h-screen max-w-[1720px] gap-4 px-4 py-4 lg:px-6">
-        <aside className="hidden lg:flex lg:w-72 lg:flex-col">
-          <div className="sticky top-4 flex min-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-[34px] border border-white/10 bg-slate-950 text-white shadow-[0_24px_80px_rgba(15,23,42,0.22)]">
-            <div className="border-b border-white/10 p-6">
+    <div className="min-h-screen overflow-x-hidden bg-[var(--page-bg)] text-[var(--text-strong)]">
+      <div className="mx-auto flex min-h-screen max-w-[1720px]">
+        <aside className="hidden lg:flex lg:w-[250px] lg:flex-col">
+          <div className="sticky top-0 flex min-h-screen flex-col text-white" style={{ background: 'var(--surface-dark)' }}>
+            <div className="border-b border-white/14 p-5">
               <BrandMark />
             </div>
 
-            <div className="flex-1 space-y-6 p-4">
+            <div className="flex-1 space-y-5 overflow-y-auto p-3.5">
               {navGroups.map((group) => (
-                <div key={group.label} className="space-y-2">
-                  <div className="px-3 text-[10px] font-bold uppercase tracking-[0.28em] text-white/35">{group.label}</div>
-                  <div className="space-y-1">
+                <div key={group.label}>
+                  <div className="px-2 pb-2 font-display text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">{group.label}</div>
+                  <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const Icon = item.icon
                       const active = isActive(pathname, item.href)
@@ -118,13 +118,12 @@ export function DashboardChrome({
                           key={item.href}
                           href={item.href}
                           className={cn(
-                            'flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition',
-                            active
-                              ? 'bg-white/12 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.10)]'
-                              : 'text-white/68 hover:bg-white/6 hover:text-white',
+                            'flex items-center gap-3 rounded-none px-3 py-3 text-sm font-semibold transition',
+                            active ? 'text-white' : 'text-white/68 hover:bg-white/6 hover:text-white',
                           )}
+                          style={active ? { background: 'var(--brand)' } : undefined}
                         >
-                          <Icon className="h-4 w-4" />
+                          <Icon className="h-4 w-4 shrink-0" />
                           <span>{item.label}</span>
                         </Link>
                       )
@@ -134,19 +133,20 @@ export function DashboardChrome({
               ))}
             </div>
 
-            <div className="space-y-4 border-t border-white/10 p-4">
-              <div className="rounded-[24px] border border-teal-400/20 bg-teal-400/10 p-4">
-                <StatusBadge tone="emerald" className="border-emerald-300/20 bg-emerald-400/10 text-emerald-100">
-                  AI powered
-                </StatusBadge>
-                <p className="mt-3 text-sm leading-7 text-white/74">
+            <div className="space-y-2.5 border-t border-white/14 p-3.5">
+              <div className="plate-corners relative border p-3.5" style={{ borderColor: 'rgba(89,128,166,0.4)' }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full animate-pulse-slow" style={{ background: 'var(--brand-soft)' }} />
+                  <span className="font-display text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--brand-soft)' }}>AI activa</span>
+                </div>
+                <p className="mt-2 text-xs leading-6 text-white/72">
                   24/7 smart booking assistant active across widget, portal, and phone workflows.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-semibold text-white/70 transition hover:bg-white/6 hover:text-white"
+                className="flex w-full items-center gap-3 rounded-none px-2 py-2 text-left text-[13px] font-semibold text-white/70 transition hover:text-white"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
@@ -155,52 +155,45 @@ export function DashboardChrome({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <header className="rounded-[32px] border border-white/70 bg-white/88 px-5 py-4 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-soft)] bg-white text-[var(--text-strong)] lg:hidden"
-                >
-                  <PanelLeftClose className="h-4 w-4" />
-                </button>
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">
-                    {activeItem.href === '/dashboard' ? 'Live dashboard' : 'Clinic workspace'}
-                  </div>
-                  <h1 className="mt-1 text-2xl font-black tracking-tight text-[var(--text-strong)]">{activeItem.label}</h1>
-                </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-10 flex items-center gap-5 border-b border-[var(--border-soft)] bg-[var(--page-bg)]/92 px-6 py-4 backdrop-blur">
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-none border border-[var(--border-soft)] bg-[var(--panel)] text-[var(--text-strong)] lg:hidden"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+            <div className="mr-auto">
+              <div className="font-display text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                Clinic workspace
               </div>
+              <h1 className="mt-0.5 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">{activeItem.label}</h1>
+            </div>
 
-              <div className="flex flex-1 items-center gap-3 lg:max-w-2xl lg:justify-end">
-                <div className="hidden flex-1 items-center gap-3 rounded-full border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3 lg:flex">
-                  <Search className="h-4 w-4 text-[var(--text-muted)]" />
-                  <span className="text-sm text-[var(--text-muted)]">Search patients, appointments, or services...</span>
-                </div>
-                <button
-                  type="button"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border-soft)] bg-white text-[var(--text-strong)]"
-                >
-                  <Bell className="h-4 w-4" />
-                </button>
-                <div className="hidden items-center gap-3 rounded-full border border-[var(--border-soft)] bg-white px-3 py-2 sm:flex">
-                  <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 text-sm font-bold text-white">
-                    {businessName.charAt(0).toUpperCase() || '?'}
-                  </div>
-                  <div className="leading-tight">
-                    <div className="max-w-[160px] truncate text-sm font-bold text-[var(--text-strong)]">{businessName}</div>
-                    <div className="max-w-[160px] truncate text-[11px] text-[var(--text-muted)]">{ownerEmail}</div>
-                  </div>
-                </div>
+            <div className="hidden min-w-[260px] flex-1 items-center gap-2 border border-[var(--border-soft)] bg-[var(--panel-soft)] px-3.5 py-2.5 lg:flex lg:max-w-sm">
+              <Search className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />
+              <span className="truncate text-sm text-[var(--text-muted)]">Search patients, appointments, or services...</span>
+            </div>
+            <button
+              type="button"
+              className="relative inline-flex h-10 w-10 items-center justify-center border border-[var(--border-soft)] bg-[var(--panel)] text-[var(--text-strong)]"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full" style={{ background: 'var(--brand)' }} />
+            </button>
+            <div className="hidden items-center gap-2.5 border border-[var(--border-soft)] py-1.5 pl-1.5 pr-3 sm:flex">
+              <div className="grid h-8 w-8 place-items-center text-sm font-bold text-white" style={{ background: 'var(--brand)' }}>
+                {businessName.charAt(0).toUpperCase() || '?'}
+              </div>
+              <div className="leading-tight">
+                <div className="max-w-[160px] truncate text-xs font-bold text-[var(--text-strong)]">{businessName}</div>
+                <div className="max-w-[160px] truncate text-[11px] text-[var(--text-muted)]">{ownerEmail}</div>
               </div>
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 pb-4">
-            <div className="rounded-[34px] border border-white/70 bg-[rgba(247,252,252,0.82)] p-4 shadow-[0_18px_60px_rgba(15,23,42,0.04)] backdrop-blur">
-              {children}
-            </div>
+          <main className="min-w-0 flex-1 px-6 py-7 pb-12">
+            {children}
           </main>
         </div>
       </div>
