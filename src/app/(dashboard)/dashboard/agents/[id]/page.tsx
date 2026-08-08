@@ -1,7 +1,5 @@
-import React from 'react'
+import { DashboardAgentDetailScreen } from '@/components/clinic/screens'
 
-const page = () => {
-  return <div>page</div>
+export default function Page({ params }: { params: { id: string } }) {
+  return <DashboardAgentDetailScreen id={params.id} />
 }
-
-export default page

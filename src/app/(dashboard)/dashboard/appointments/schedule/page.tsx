@@ -1,7 +1,5 @@
-import React from 'react'
+import { DashboardScheduleScreen } from '@/components/clinic/screens'
 
-const page = () => {
-  return <div>page</div>
+export default function Page() {
+  return <DashboardScheduleScreen />
 }
-
-export default page

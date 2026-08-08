@@ -1,0 +1,744 @@
+-- Clinical AI receptionist SaaS schema
+-- Multi-tenant: every row belongs to a business (clinic).
+
+create extension if not exists pgcrypto;
+
+create or replace function update_updated_at_column()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create or replace function is_business_owner(target_business_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from businesses
+    where id = target_business_id
+      and owner_id = auth.uid()
+  );
+$$;
+
+create or replace function has_business_access(target_business_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from businesses
+    where id = target_business_id
+      and owner_id = auth.uid()
+  )
+  or exists (
+    select 1
+    from business_members
+    where business_id = target_business_id
+      and user_id = auth.uid()
+  );
+$$;
+
+create or replace function is_patient_owner(target_patient_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from patients
+    where id = target_patient_id
+      and auth_user_id = auth.uid()
+  );
+$$;
+
+-- 1. BUSINESSES / CLINICS
+create table if not exists businesses (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  slug text not null unique,
+  specialty text,
+  description text,
+  logo_url text,
+  phone text,
+  contact_email text,
+  booking_email text,
+  website text,
+  address text,
+  city text,
+  state text,
+  zip_code text,
+  timezone text not null default 'America/New_York',
+  payment_wallet_address text,
+  payment_chain_id integer not null default 137,
+  payment_currency text not null default 'USDC',
+  booking_deposit_amount numeric(12,2),
+  onboarding_step text not null default 'created'
+    check (onboarding_step in ('created', 'profile', 'agent', 'services', 'billing', 'done')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_businesses_owner_id on businesses (owner_id);
+create index if not exists idx_businesses_slug on businesses (slug);
+
+drop trigger if exists update_businesses_updated_at on businesses;
+create trigger update_businesses_updated_at
+before update on businesses
+for each row execute function update_updated_at_column();
+
+alter table businesses enable row level security;
+
+drop policy if exists "business owners can read own business" on businesses;
+create policy "business owners can read own business"
+  on businesses for select using (has_business_access(id));
+drop policy if exists "business owners can create business" on businesses;
+create policy "business owners can create business"
+  on businesses for insert with check (owner_id = auth.uid());
+drop policy if exists "business owners can update business" on businesses;
+create policy "business owners can update business"
+  on businesses for update using (is_business_owner(id));
+drop policy if exists "business owners can delete business" on businesses;
+create policy "business owners can delete business"
+  on businesses for delete using (is_business_owner(id));
+
+-- 2. STAFF / MEMBERS
+create table if not exists business_members (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'staff'
+    check (role in ('owner', 'admin', 'staff', 'assistant')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (business_id, user_id)
+);
+
+create index if not exists idx_business_members_business_id on business_members (business_id);
+create index if not exists idx_business_members_user_id on business_members (user_id);
+
+drop trigger if exists update_business_members_updated_at on business_members;
+create trigger update_business_members_updated_at
+before update on business_members
+for each row execute function update_updated_at_column();
+
+alter table business_members enable row level security;
+
+drop policy if exists "members can read their memberships" on business_members;
+create policy "members can read their memberships"
+  on business_members for select using (user_id = auth.uid() or is_business_owner(business_id));
+drop policy if exists "owners can manage memberships" on business_members;
+create policy "owners can manage memberships"
+  on business_members for all using (is_business_owner(business_id));
+
+-- 3. SUBSCRIPTIONS
+create table if not exists business_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade unique,
+  plan text not null default 'free'
+    check (plan in ('free', 'starter', 'pro', 'enterprise')),
+  status text not null default 'active'
+    check (status in ('active', 'trialing', 'past_due', 'canceled', 'incomplete')),
+  website_builder_enabled boolean not null default false,
+  billing_enabled boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_business_subscriptions_business_id on business_subscriptions (business_id);
+
+drop trigger if exists update_business_subscriptions_updated_at on business_subscriptions;
+create trigger update_business_subscriptions_updated_at
+before update on business_subscriptions
+for each row execute function update_updated_at_column();
+
+alter table business_subscriptions enable row level security;
+
+drop policy if exists "subscription access by business members" on business_subscriptions;
+create policy "subscription access by business members"
+  on business_subscriptions for select using (has_business_access(business_id));
+drop policy if exists "subscription changes by owners" on business_subscriptions;
+create policy "subscription changes by owners"
+  on business_subscriptions for all using (is_business_owner(business_id));
+
+-- 4. AI AGENTS
+create table if not exists ai_agents (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  name text not null,
+  title text,
+  specialty text,
+  voice text not null default 'alloy',
+  personality text not null default 'friendly',
+  sensitivity numeric(3,2) not null default 0.50 check (sensitivity between 0 and 1),
+  greeting_message text not null default 'Hello! I am Clara. How can I help today?',
+  system_prompt text not null default '',
+  language text not null default 'en',
+  status text not null default 'draft'
+    check (status in ('draft', 'live', 'paused')),
+  calls_handled integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_ai_agents_business_id on ai_agents (business_id);
+
+drop trigger if exists update_ai_agents_updated_at on ai_agents;
+create trigger update_ai_agents_updated_at
+before update on ai_agents
+for each row execute function update_updated_at_column();
+
+alter table ai_agents enable row level security;
+
+drop policy if exists "agents access by business members" on ai_agents;
+create policy "agents access by business members"
+  on ai_agents for all using (has_business_access(business_id));
+drop policy if exists "public can read live agents" on ai_agents;
+create policy "public can read live agents"
+  on ai_agents for select using (status = 'live');
+
+-- 5. CLINIC SERVICES
+create table if not exists clinic_services (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  name text not null,
+  description text,
+  duration_minutes integer not null default 30,
+  price_type text not null default 'fixed'
+    check (price_type in ('fixed', 'starting_at', 'contact')),
+  price numeric(12,2),
+  price_min numeric(12,2),
+  price_max numeric(12,2),
+  currency text not null default 'USDC',
+  active boolean not null default true,
+  color text,
+  instructions text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_clinic_services_business_id on clinic_services (business_id);
+create index if not exists idx_clinic_services_active on clinic_services (business_id, active);
+
+drop trigger if exists update_clinic_services_updated_at on clinic_services;
+create trigger update_clinic_services_updated_at
+before update on clinic_services
+for each row execute function update_updated_at_column();
+
+alter table clinic_services enable row level security;
+
+drop policy if exists "services access by business members" on clinic_services;
+create policy "services access by business members"
+  on clinic_services for all using (has_business_access(business_id));
+drop policy if exists "public can read active services" on clinic_services;
+create policy "public can read active services"
+  on clinic_services for select using (active = true);
+
+-- 6. PATIENTS
+create table if not exists patients (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  auth_user_id uuid references auth.users(id) on delete set null,
+  name text not null,
+  phone text,
+  email text,
+  date_of_birth date,
+  notes text,
+  insurance_provider text,
+  source text not null default 'manual'
+    check (source in ('ai_call', 'widget_chat', 'manual', 'portal', 'website_form')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_patients_business_id on patients (business_id);
+create index if not exists idx_patients_email on patients (email);
+create index if not exists idx_patients_phone on patients (phone);
+create index if not exists idx_patients_auth_user_id on patients (auth_user_id);
+
+drop trigger if exists update_patients_updated_at on patients;
+create trigger update_patients_updated_at
+before update on patients
+for each row execute function update_updated_at_column();
+
+alter table patients enable row level security;
+
+drop policy if exists "patients access by business members" on patients;
+create policy "patients access by business members"
+  on patients for all using (has_business_access(business_id));
+drop policy if exists "patients can read their own record" on patients;
+create policy "patients can read their own record"
+  on patients for select using (auth_user_id = auth.uid());
+drop policy if exists "patients can update their own record" on patients;
+create policy "patients can update their own record"
+  on patients for update using (auth_user_id = auth.uid());
+
+-- 7. BUSINESS AVAILABILITY
+create table if not exists business_availability (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  day_of_week smallint not null check (day_of_week between 0 and 6),
+  is_active boolean not null default true,
+  open_time time not null default '09:00',
+  close_time time not null default '17:00',
+  break_start time,
+  break_end time,
+  slot_minutes integer not null default 30,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (business_id, day_of_week)
+);
+
+create index if not exists idx_business_availability_business_id on business_availability (business_id);
+
+drop trigger if exists update_business_availability_updated_at on business_availability;
+create trigger update_business_availability_updated_at
+before update on business_availability
+for each row execute function update_updated_at_column();
+
+alter table business_availability enable row level security;
+
+drop policy if exists "availability access by business members" on business_availability;
+create policy "availability access by business members"
+  on business_availability for all using (has_business_access(business_id));
+
+-- 8. CLOSED DATES
+create table if not exists closed_dates (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  blocked_date date not null,
+  reason text,
+  created_at timestamptz not null default now(),
+  unique (business_id, blocked_date)
+);
+
+create index if not exists idx_closed_dates_business_id on closed_dates (business_id);
+create index if not exists idx_closed_dates_blocked_date on closed_dates (blocked_date);
+
+alter table closed_dates enable row level security;
+
+drop policy if exists "closed dates access by business members" on closed_dates;
+create policy "closed dates access by business members"
+  on closed_dates for all using (has_business_access(business_id));
+
+-- 9. APPOINTMENTS
+create table if not exists appointments (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  patient_id uuid references patients(id) on delete set null,
+  agent_id uuid references ai_agents(id) on delete set null,
+  service_id uuid references clinic_services(id) on delete set null,
+  conversation_id uuid,
+  scheduled_at timestamptz not null,
+  status text not null default 'scheduled'
+    check (status in ('scheduled', 'pending_confirmation', 'confirmed', 'completed', 'cancelled', 'no_show')),
+  source text not null default 'widget'
+    check (source in ('widget', 'portal', 'manual', 'ai_call', 'phone')),
+  notes text,
+  rescheduled_from uuid references appointments(id) on delete set null,
+  requested_scheduled_at timestamptz,
+  reschedule_requested_at timestamptz,
+  confirmed_at timestamptz,
+  cancelled_at timestamptz,
+  cancellation_reason text,
+  cancelled_by text check (cancelled_by in ('patient', 'business', 'system')),
+  payment_status text not null default 'not_required'
+    check (payment_status in ('not_required', 'pending', 'partial', 'paid', 'cash', 'refunded')),
+  payment_amount numeric(12,2),
+  payment_currency text not null default 'USDC',
+  payment_chain_id integer not null default 137,
+  payment_tx_hash text,
+  reminder_sent_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_appointments_business_id on appointments (business_id);
+create index if not exists idx_appointments_patient_id on appointments (patient_id);
+create index if not exists idx_appointments_agent_id on appointments (agent_id);
+create index if not exists idx_appointments_service_id on appointments (service_id);
+create index if not exists idx_appointments_scheduled_at on appointments (scheduled_at);
+create index if not exists idx_appointments_status on appointments (status);
+
+drop trigger if exists update_appointments_updated_at on appointments;
+create trigger update_appointments_updated_at
+before update on appointments
+for each row execute function update_updated_at_column();
+
+alter table appointments enable row level security;
+
+drop policy if exists "appointments access by business members" on appointments;
+create policy "appointments access by business members"
+  on appointments for all using (has_business_access(business_id));
+drop policy if exists "patients can see their appointments" on appointments;
+create policy "patients can see their appointments"
+  on appointments for select using (
+    exists (
+      select 1
+      from patients p
+      where p.id = patient_id
+        and p.auth_user_id = auth.uid()
+    )
+  );
+
+-- 10. CONVERSATIONS
+create table if not exists conversations (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  agent_id uuid references ai_agents(id) on delete set null,
+  patient_id uuid references patients(id) on delete set null,
+  appointment_id uuid references appointments(id) on delete set null,
+  channel text not null default 'widget_voice'
+    check (channel in ('widget_voice', 'widget_chat', 'phone')),
+  status text not null default 'in_progress'
+    check (status in ('in_progress', 'completed', 'failed')),
+  outcome text check (outcome in ('booked_appointment', 'qualified_lead', 'no_action', 'escalated')),
+  sentiment text check (sentiment in ('positive', 'neutral', 'negative')),
+  duration_seconds integer not null default 0,
+  transcript_summary text,
+  started_at timestamptz not null default now(),
+  ended_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_conversations_business_id on conversations (business_id);
+create index if not exists idx_conversations_patient_id on conversations (patient_id);
+create index if not exists idx_conversations_appointment_id on conversations (appointment_id);
+
+alter table conversations enable row level security;
+
+drop policy if exists "conversations access by business members" on conversations;
+create policy "conversations access by business members"
+  on conversations for all using (has_business_access(business_id));
+drop policy if exists "patients can see own conversations" on conversations;
+create policy "patients can see own conversations"
+  on conversations for select using (
+    exists (
+      select 1
+      from patients p
+      where p.id = patient_id
+        and p.auth_user_id = auth.uid()
+    )
+  );
+
+create table if not exists conversation_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references conversations(id) on delete cascade,
+  business_id uuid not null references businesses(id) on delete cascade,
+  role text not null check (role in ('agent', 'caller', 'system')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_conversation_messages_conversation_id on conversation_messages (conversation_id);
+create index if not exists idx_conversation_messages_business_id on conversation_messages (business_id);
+
+alter table conversation_messages enable row level security;
+
+drop policy if exists "conversation messages access by business members" on conversation_messages;
+create policy "conversation messages access by business members"
+  on conversation_messages for all using (has_business_access(business_id));
+
+-- 11. KNOWLEDGE DOCUMENTS / FAQS
+create table if not exists knowledge_documents (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  title text not null,
+  question text,
+  answer text,
+  category text,
+  catalog_key text,
+  source_url text,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_knowledge_documents_business_id on knowledge_documents (business_id);
+create index if not exists idx_knowledge_documents_catalog_key on knowledge_documents (catalog_key);
+
+drop trigger if exists update_knowledge_documents_updated_at on knowledge_documents;
+create trigger update_knowledge_documents_updated_at
+before update on knowledge_documents
+for each row execute function update_updated_at_column();
+
+alter table knowledge_documents enable row level security;
+
+drop policy if exists "knowledge documents access by business members" on knowledge_documents;
+create policy "knowledge documents access by business members"
+  on knowledge_documents for all using (has_business_access(business_id));
+
+-- 12. WIDGETS
+create table if not exists widgets (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  agent_id uuid references ai_agents(id) on delete set null,
+  name text not null default 'Main Widget',
+  slug text not null,
+  enabled boolean not null default true,
+  position text not null default 'bottom-right',
+  theme text not null default 'light',
+  primary_color text not null default '#0f766e',
+  secondary_color text not null default '#0ea5e9',
+  tone text not null default 'professional-and-friendly',
+  greeting_message text not null default 'Hola, soy Clara. En que te ayudo?',
+  allowed_origins text[] not null default '{}',
+  slot_duration integer not null default 30,
+  show_branding boolean not null default true,
+  impressions integer not null default 0,
+  interactions integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (business_id, slug)
+);
+
+create index if not exists idx_widgets_business_id on widgets (business_id);
+create index if not exists idx_widgets_slug on widgets (slug);
+
+drop trigger if exists update_widgets_updated_at on widgets;
+create trigger update_widgets_updated_at
+before update on widgets
+for each row execute function update_updated_at_column();
+
+alter table widgets enable row level security;
+
+drop policy if exists "widgets access by business members" on widgets;
+create policy "widgets access by business members"
+  on widgets for all using (has_business_access(business_id));
+drop policy if exists "public can read enabled widgets" on widgets;
+create policy "public can read enabled widgets"
+  on widgets for select using (enabled = true);
+
+-- 13. WEBSITES
+create table if not exists websites (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  agent_id uuid references ai_agents(id) on delete set null,
+  slug text not null unique,
+  template text not null default 'serenity'
+    check (template in ('serenity', 'pulse', 'clarity')),
+  published boolean not null default false,
+  primary_color text not null default '#0f766e',
+  secondary_color text not null default '#0ea5e9',
+  font text not null default 'Inter',
+  site_title text not null,
+  site_description text not null,
+  hero_headline text,
+  hero_subheadline text,
+  hero_image_url text,
+  cta_primary_text text not null default 'Book Appointment',
+  cta_secondary_text text not null default 'View Services',
+  about_title text not null default 'About Us',
+  about_story text,
+  about_photo_url text,
+  footer_tagline text,
+  footer_copyright text,
+  contact_phone text,
+  contact_email text,
+  contact_address text,
+  contact_hours text,
+  contact_maps_url text,
+  years_experience integer,
+  patients_served integer,
+  satisfaction_pct numeric(5,2),
+  trust_badges text[] not null default '{}',
+  featured_service_ids uuid[] not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_websites_business_id on websites (business_id);
+create index if not exists idx_websites_slug on websites (slug);
+
+drop trigger if exists update_websites_updated_at on websites;
+create trigger update_websites_updated_at
+before update on websites
+for each row execute function update_updated_at_column();
+
+alter table websites enable row level security;
+
+drop policy if exists "websites access by business members" on websites;
+create policy "websites access by business members"
+  on websites for all using (has_business_access(business_id));
+drop policy if exists "public can read published websites" on websites;
+create policy "public can read published websites"
+  on websites for select using (published = true);
+
+create table if not exists website_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  email text not null,
+  name text,
+  source text not null default 'website',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_website_subscribers_business_id on website_subscribers (business_id);
+create index if not exists idx_website_subscribers_email on website_subscribers (email);
+
+alter table website_subscribers enable row level security;
+
+drop policy if exists "website subscribers by business members" on website_subscribers;
+create policy "website subscribers by business members"
+  on website_subscribers for all using (has_business_access(business_id));
+
+-- 14. SUPPORT
+create table if not exists support_tickets (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  patient_id uuid references patients(id) on delete set null,
+  appointment_id uuid references appointments(id) on delete set null,
+  subject text not null,
+  description text,
+  status text not null default 'open'
+    check (status in ('open', 'pending', 'resolved', 'closed')),
+  priority text not null default 'medium'
+    check (priority in ('low', 'medium', 'high', 'urgent')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_support_tickets_business_id on support_tickets (business_id);
+create index if not exists idx_support_tickets_patient_id on support_tickets (patient_id);
+
+drop trigger if exists update_support_tickets_updated_at on support_tickets;
+create trigger update_support_tickets_updated_at
+before update on support_tickets
+for each row execute function update_updated_at_column();
+
+alter table support_tickets enable row level security;
+
+drop policy if exists "support tickets access by business members" on support_tickets;
+create policy "support tickets access by business members"
+  on support_tickets for all using (has_business_access(business_id));
+drop policy if exists "patients can read their support tickets" on support_tickets;
+create policy "patients can read their support tickets"
+  on support_tickets for select using (
+    exists (
+      select 1
+      from patients p
+      where p.id = patient_id
+        and p.auth_user_id = auth.uid()
+    )
+  );
+
+create table if not exists support_messages (
+  id uuid primary key default gen_random_uuid(),
+  ticket_id uuid not null references support_tickets(id) on delete cascade,
+  business_id uuid not null references businesses(id) on delete cascade,
+  sender_type text not null check (sender_type in ('patient', 'staff', 'system')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_support_messages_ticket_id on support_messages (ticket_id);
+create index if not exists idx_support_messages_business_id on support_messages (business_id);
+
+alter table support_messages enable row level security;
+
+drop policy if exists "support messages access by business members" on support_messages;
+create policy "support messages access by business members"
+  on support_messages for all using (has_business_access(business_id));
+
+-- 15. NOTIFICATIONS
+create table if not exists notifications (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  category text not null default 'system'
+    check (category in ('appointment', 'billing', 'widget', 'support', 'system')),
+  title text not null,
+  message text not null,
+  data jsonb,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_notifications_business_id on notifications (business_id);
+create index if not exists idx_notifications_created_at on notifications (created_at desc);
+
+alter table notifications enable row level security;
+
+drop policy if exists "notifications access by business members" on notifications;
+create policy "notifications access by business members"
+  on notifications for all using (has_business_access(business_id));
+
+-- 16. BILLING TRANSACTIONS
+create table if not exists billing_transactions (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  appointment_id uuid references appointments(id) on delete set null,
+  patient_id uuid references patients(id) on delete set null,
+  amount numeric(12,2) not null,
+  currency text not null default 'USDC',
+  chain_id integer not null default 137,
+  tx_hash text not null unique,
+  status text not null default 'pending'
+    check (status in ('pending', 'confirmed', 'failed', 'refunded')),
+  payment_type text not null default 'booking_deposit'
+    check (payment_type in ('booking_deposit', 'full_payment', 'subscription', 'portal_topup')),
+  metadata jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_billing_transactions_business_id on billing_transactions (business_id);
+create index if not exists idx_billing_transactions_appointment_id on billing_transactions (appointment_id);
+create index if not exists idx_billing_transactions_patient_id on billing_transactions (patient_id);
+
+drop trigger if exists update_billing_transactions_updated_at on billing_transactions;
+create trigger update_billing_transactions_updated_at
+before update on billing_transactions
+for each row execute function update_updated_at_column();
+
+alter table billing_transactions enable row level security;
+
+drop policy if exists "billing transactions access by business members" on billing_transactions;
+create policy "billing transactions access by business members"
+  on billing_transactions for all using (has_business_access(business_id));
+drop policy if exists "patients can see their billing rows" on billing_transactions;
+create policy "patients can see their billing rows"
+  on billing_transactions for select using (
+    exists (
+      select 1
+      from patients p
+      where p.id = patient_id
+        and p.auth_user_id = auth.uid()
+    )
+  );
+
+-- 17. OPTIONAL HELPER VIEW FOR DASHBOARDS
+create or replace view business_public_profiles as
+select
+  id,
+  name,
+  slug,
+  specialty,
+  description,
+  logo_url,
+  phone,
+  booking_email,
+  timezone,
+  address,
+  website,
+  city,
+  state,
+  zip_code,
+  payment_wallet_address,
+  payment_chain_id,
+  payment_currency
+from businesses;
+

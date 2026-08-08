@@ -1,7 +1,15 @@
-import React from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
 
-const Card = () => {
-  return <div>Card</div>
+import { cn } from '@/lib/utils'
+
+type CardProps = HTMLAttributes<HTMLDivElement> & {
+  children: ReactNode
 }
 
-export default Card
+export default function Card({ children, className, ...props }: CardProps) {
+  return (
+    <div className={cn('rounded-[28px] border border-[var(--border-soft)] bg-[var(--panel)] shadow-[0_20px_60px_rgba(15,23,42,0.06)]', className)} {...props}>
+      {children}
+    </div>
+  )
+}

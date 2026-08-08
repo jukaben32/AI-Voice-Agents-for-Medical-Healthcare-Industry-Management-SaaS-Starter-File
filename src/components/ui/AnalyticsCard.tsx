@@ -1,7 +1,16 @@
-import React from 'react'
+import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
 
-const AnalyticsCard = () => {
-  return <div>AnalyticsCard</div>
+import { MetricCard } from '@/components/clinic/shared'
+
+type AnalyticsCardProps = {
+  label: string
+  value: string
+  delta?: string
+  icon: LucideIcon
+  tone?: 'teal' | 'emerald' | 'blue' | 'amber' | 'rose' | 'slate'
 }
 
-export default AnalyticsCard
+export default function AnalyticsCard(props: AnalyticsCardProps) {
+  return <MetricCard {...props} />
+}

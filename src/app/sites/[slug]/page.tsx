@@ -1,7 +1,5 @@
-import React from 'react'
+import { SiteSlugScreen } from '@/components/clinic/screens'
 
-const page = () => {
-  return <div>page</div>
+export default function Page({ params }: { params: { slug: string } }) {
+  return <SiteSlugScreen slug={params.slug} />
 }
-
-export default page
