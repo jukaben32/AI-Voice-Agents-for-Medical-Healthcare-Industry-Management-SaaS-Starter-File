@@ -1240,31 +1240,6 @@ export function DashboardConversationsScreen() {
   )
 }
 
-export function DashboardFaqsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>FAQs</SectionEyebrow>}
-        title="Teach Clara the answers patients ask most"
-        description="Add structured answers for parking, cancellations, preparation instructions, and clinic policies."
-      />
-      <div className="grid gap-4 xl:grid-cols-2">
-        {[
-          ['How do I cancel or reschedule?', 'You can cancel or reschedule through this chat at least 24 hours in advance.'],
-          ['Is parking available?', 'Yes, free parking is available at our clinic.'],
-          ['How long does a consultation take?', 'A general consultation typically takes 30 minutes.'],
-          ['Can I use insurance?', 'We accept self pay and selected private insurance plans.'],
-        ].map(([question, answer]) => (
-          <SurfaceCard key={question} className="p-5">
-            <div className="text-sm font-black tracking-tight text-[var(--text-strong)]">{question}</div>
-            <div className="mt-2 text-sm leading-7 text-[var(--text-muted)]">{answer}</div>
-          </SurfaceCard>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 export function DashboardScheduleScreen() {
   return (
     <div className="space-y-8">
