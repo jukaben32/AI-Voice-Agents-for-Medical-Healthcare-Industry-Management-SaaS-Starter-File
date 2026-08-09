@@ -42,6 +42,7 @@ export const APPOINTMENT_SOURCE_LABEL: Record<AppointmentSource, string> = {
   manual: 'Manual',
   ai_call: 'AI Call',
   phone: 'Phone',
+  whatsapp: 'WhatsApp',
 }
 
 export function formatDateTimeInTimeZone(iso: string, timezone: string): string {
@@ -71,4 +72,3 @@ export function formatTimeInTimeZone(iso: string, timezone: string): string {
     minute: '2-digit',
   }).format(new Date(iso))
 }
-

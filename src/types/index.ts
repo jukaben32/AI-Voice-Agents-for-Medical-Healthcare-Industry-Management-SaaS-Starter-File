@@ -7,8 +7,8 @@ export type AgentStatus = 'draft' | 'live' | 'paused'
 export type ServicePriceType = 'fixed' | 'starting_at' | 'contact'
 export type AppointmentStatus = 'scheduled' | 'pending_confirmation' | 'confirmed' | 'completed' | 'cancelled' | 'no_show'
 export type PaymentStatus = 'not_required' | 'pending' | 'partial' | 'paid' | 'cash' | 'refunded'
-export type AppointmentSource = 'widget' | 'portal' | 'manual' | 'ai_call' | 'phone'
-export type ConversationChannel = 'widget_voice' | 'widget_chat' | 'phone'
+export type AppointmentSource = 'widget' | 'portal' | 'manual' | 'ai_call' | 'phone' | 'whatsapp'
+export type ConversationChannel = 'widget_voice' | 'widget_chat' | 'phone' | 'whatsapp'
 export type ConversationStatus = 'in_progress' | 'completed' | 'failed'
 export type ConversationOutcome = 'booked_appointment' | 'qualified_lead' | 'no_action' | 'escalated'
 export type Sentiment = 'positive' | 'neutral' | 'negative'
@@ -113,7 +113,7 @@ export interface Patient {
   dateOfBirth: string | null
   notes: string | null
   insuranceProvider: string | null
-  source: 'ai_call' | 'widget_chat' | 'manual' | 'portal' | 'website_form'
+  source: 'ai_call' | 'widget_chat' | 'manual' | 'portal' | 'website_form' | 'whatsapp'
   createdAt: string
   updatedAt: string
 }
@@ -269,6 +269,20 @@ export interface Website {
   featuredServiceIds: string[]
   createdAt: string
   updatedAt: string
+}
+
+export interface WhatsappConnection {
+  id: string
+  business_id: string
+  agent_id: string | null
+  provider: 'evolution'
+  instance_name: string
+  instance_token: string | null
+  phone_number: string | null
+  status: 'disconnected' | 'connecting' | 'connected'
+  is_enabled: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface WebsiteService {

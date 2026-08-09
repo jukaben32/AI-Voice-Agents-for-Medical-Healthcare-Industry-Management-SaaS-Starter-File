@@ -62,7 +62,7 @@ export const patientSchema = z.object({
   dateOfBirth: z.string().optional().nullable(),
   notes: z.string().max(5000).optional().nullable(),
   insuranceProvider: z.string().max(120).optional().nullable(),
-  source: z.enum(['ai_call', 'widget_chat', 'manual', 'portal', 'website_form']).optional(),
+  source: z.enum(['ai_call', 'widget_chat', 'manual', 'portal', 'website_form', 'whatsapp']).optional(),
   authUserId: z.string().uuid().optional().nullable(),
 })
 
@@ -72,7 +72,7 @@ export const appointmentCreateSchema = z.object({
   serviceId: z.string().uuid().optional().nullable(),
   conversationId: z.string().uuid().optional().nullable(),
   scheduledAt: z.string().datetime(),
-  source: z.enum(['widget', 'portal', 'manual', 'ai_call', 'phone']).optional(),
+  source: z.enum(['widget', 'portal', 'manual', 'ai_call', 'phone', 'whatsapp']).optional(),
   status: z.enum(['scheduled', 'pending_confirmation', 'confirmed', 'completed', 'cancelled', 'no_show']).optional(),
   notes: z.string().max(5000).optional().nullable(),
   requestedScheduledAt: z.string().datetime().optional().nullable(),

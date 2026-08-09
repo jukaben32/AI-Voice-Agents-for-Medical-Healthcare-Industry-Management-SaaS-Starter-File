@@ -22,6 +22,7 @@ import { AppointmentDetailsDrawer } from './AppointmentDetailsDrawer'
 import {
   APPOINTMENT_STATUS_LABEL,
   APPOINTMENT_STATUS_TONE,
+  APPOINTMENT_SOURCE_LABEL,
   PAYMENT_STATUS_LABEL,
   PAYMENT_STATUS_TONE,
   formatDateTimeInTimeZone,
@@ -197,7 +198,9 @@ function HistoryRow({
 
       <div className="min-w-0">
         <div className="truncate font-semibold text-[var(--text-strong)]">{appointment.service?.name ?? 'General Consultation'}</div>
-        <div className="mt-1 text-xs text-[var(--text-muted)]">{appointment.source}</div>
+        <div className="mt-1 text-xs text-[var(--text-muted)]">
+          {APPOINTMENT_SOURCE_LABEL[appointment.source] ?? appointment.source}
+        </div>
       </div>
 
       <div className="font-semibold text-[var(--text-strong)]">

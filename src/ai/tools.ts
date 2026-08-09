@@ -289,7 +289,8 @@ export async function executeRealtimeToolCall(
   supabase: DbClient,
   businessId: string,
   toolName: string,
-  args: Record<string, unknown> = {}
+  args: Record<string, unknown> = {},
+  opts: { patientSource?: Patient['source']; appointmentSource?: AppointmentSource } = {}
 ) {
   switch (toolName) {
     case 'list_clinic_services': {
@@ -309,7 +310,7 @@ export async function executeRealtimeToolCall(
         name: String(args.name || 'Unknown'),
         email: typeof args.email === 'string' ? args.email : null,
         phone: typeof args.phone === 'string' ? args.phone : null,
-        source: 'ai_call',
+        source: opts.patientSource ?? 'ai_call',
       })
       return { patient }
     }
@@ -321,7 +322,7 @@ export async function executeRealtimeToolCall(
               name: String(args.patientName || 'Unknown'),
               email: typeof args.patientEmail === 'string' ? args.patientEmail : null,
               phone: typeof args.patientPhone === 'string' ? args.patientPhone : null,
-              source: 'ai_call',
+              source: opts.patientSource ?? 'ai_call',
             })
 
       const appointment = await createAppointment(supabase, businessId, {
@@ -329,7 +330,7 @@ export async function executeRealtimeToolCall(
         agentId: typeof args.agentId === 'string' ? args.agentId : null,
         serviceId: typeof args.serviceId === 'string' ? args.serviceId : null,
         scheduledAt: String(args.scheduledAt),
-        source: (typeof args.source === 'string' ? args.source : 'ai_call') as AppointmentSource,
+        source: (opts.appointmentSource ?? (typeof args.source === 'string' ? args.source : 'ai_call')) as AppointmentSource,
         notes: typeof args.notes === 'string' ? args.notes : null,
       })
       if ((patient?.email || typeof args.patientEmail === 'string') && appointment.id) {

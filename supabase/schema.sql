@@ -275,7 +275,7 @@ create table if not exists patients (
   notes text,
   insurance_provider text,
   source text not null default 'manual'
-    check (source in ('ai_call', 'widget_chat', 'manual', 'portal', 'website_form')),
+    check (source in ('ai_call', 'widget_chat', 'manual', 'portal', 'website_form', 'whatsapp')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -362,7 +362,7 @@ create table if not exists appointments (
   status text not null default 'scheduled'
     check (status in ('scheduled', 'pending_confirmation', 'confirmed', 'completed', 'cancelled', 'no_show')),
   source text not null default 'widget'
-    check (source in ('widget', 'portal', 'manual', 'ai_call', 'phone')),
+    check (source in ('widget', 'portal', 'manual', 'ai_call', 'phone', 'whatsapp')),
   notes text,
   rescheduled_from uuid references appointments(id) on delete set null,
   requested_scheduled_at timestamptz,
@@ -418,7 +418,7 @@ create table if not exists conversations (
   patient_id uuid references patients(id) on delete set null,
   appointment_id uuid references appointments(id) on delete set null,
   channel text not null default 'widget_voice'
-    check (channel in ('widget_voice', 'widget_chat', 'phone')),
+    check (channel in ('widget_voice', 'widget_chat', 'phone', 'whatsapp')),
   status text not null default 'in_progress'
     check (status in ('in_progress', 'completed', 'failed')),
   outcome text check (outcome in ('booked_appointment', 'qualified_lead', 'no_action', 'escalated')),
@@ -467,6 +467,40 @@ alter table conversation_messages enable row level security;
 drop policy if exists "conversation messages access by business members" on conversation_messages;
 create policy "conversation messages access by business members"
   on conversation_messages for all using (has_business_access(business_id));
+
+-- 10.5. WHATSAPP CONNECTIONS
+create table if not exists whatsapp_connections (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade unique,
+  agent_id uuid references ai_agents(id) on delete set null,
+  provider text not null default 'evolution'
+    check (provider in ('evolution')),
+  instance_name text not null,
+  instance_token text,
+  phone_number text,
+  status text not null default 'disconnected'
+    check (status in ('disconnected', 'connecting', 'connected')),
+  is_enabled boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_whatsapp_connections_business_id on whatsapp_connections (business_id);
+create index if not exists idx_whatsapp_connections_status on whatsapp_connections (status);
+
+drop trigger if exists update_whatsapp_connections_updated_at on whatsapp_connections;
+create trigger update_whatsapp_connections_updated_at
+before update on whatsapp_connections
+for each row execute function update_updated_at_column();
+
+alter table whatsapp_connections enable row level security;
+
+drop policy if exists "whatsapp connections access by business members" on whatsapp_connections;
+create policy "whatsapp connections access by business members"
+  on whatsapp_connections for all using (has_business_access(business_id))
+  with check (has_business_access(business_id));
+
+grant select, insert, update, delete on whatsapp_connections to authenticated;
 
 -- 11. KNOWLEDGE DOCUMENTS / FAQS
 create table if not exists knowledge_documents (

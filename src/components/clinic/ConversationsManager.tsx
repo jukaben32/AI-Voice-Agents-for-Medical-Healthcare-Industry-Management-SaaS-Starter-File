@@ -37,6 +37,7 @@ const CHANNEL_LABELS: Record<Conversation['channel'], string> = {
   phone: 'Phone',
   widget_chat: 'Widget chat',
   widget_voice: 'Widget voice',
+  whatsapp: 'WhatsApp',
 }
 
 const NUMBER_FORMAT = new Intl.NumberFormat('en-US')

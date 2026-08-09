@@ -15,7 +15,7 @@ const conversationSchema = z.object({
   agentId: z.string().uuid().optional().nullable(),
   patientId: z.string().uuid().optional().nullable(),
   appointmentId: z.string().uuid().optional().nullable(),
-  channel: z.enum(['widget_voice', 'widget_chat', 'phone']).optional(),
+  channel: z.enum(['widget_voice', 'widget_chat', 'phone', 'whatsapp']).optional(),
   status: z.enum(['in_progress', 'completed', 'failed']).optional(),
   outcome: z.enum(['booked_appointment', 'qualified_lead', 'no_action', 'escalated']).optional().nullable(),
   sentiment: z.enum(['positive', 'neutral', 'negative']).optional().nullable(),

@@ -23,6 +23,7 @@ import {
   User,
   Users,
   LineChart,
+  PhoneCall,
 } from 'lucide-react'
 
 import { BrandMark } from '@/components/clinic/shared'
@@ -48,7 +49,7 @@ const navGroups: readonly NavGroup[] = [
     items: [
       { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
       { href: '/dashboard/analytics', label: 'Analytics', icon: LineChart },
-      { href: '/dashboard/conversations', label: 'Call Log', icon: MessageCircle },
+      { href: '/dashboard/conversations', label: 'Call Log', icon: PhoneCall },
       { href: '/dashboard/appointments', label: 'Appointments', icon: CalendarDays },
       { href: '/dashboard/appointments/schedule', label: 'Schedule', icon: CalendarRange },
       { href: '/dashboard/patients', label: 'Patients', icon: Users },
@@ -62,6 +63,7 @@ const navGroups: readonly NavGroup[] = [
       { href: '/dashboard/services', label: 'Services', icon: Stethoscope },
       { href: '/dashboard/faqs', label: 'Knowledge', icon: FileText },
       { href: '/dashboard/widget', label: 'Widget', icon: Sparkles },
+      { href: '/dashboard/whatsapp', label: 'WhatsApp', icon: MessageCircle },
       { href: '/dashboard/website', label: 'Website', icon: Globe2 },
     ],
   },
