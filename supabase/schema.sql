@@ -588,10 +588,15 @@ alter table websites enable row level security;
 
 drop policy if exists "websites access by business members" on websites;
 create policy "websites access by business members"
-  on websites for all using (has_business_access(business_id));
+  on websites for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 drop policy if exists "public can read published websites" on websites;
 create policy "public can read published websites"
-  on websites for select using (published = true);
+  on websites for select
+  to anon
+  using (published = true);
 
 create table if not exists website_subscribers (
   id uuid primary key default gen_random_uuid(),
@@ -609,7 +614,10 @@ alter table website_subscribers enable row level security;
 
 drop policy if exists "website subscribers by business members" on website_subscribers;
 create policy "website subscribers by business members"
-  on website_subscribers for all using (has_business_access(business_id));
+  on website_subscribers for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 
 -- 13a. WEBSITE CONTENT TABLES
 create table if not exists website_services (
@@ -637,10 +645,15 @@ alter table website_services enable row level security;
 
 drop policy if exists "website services access by business members" on website_services;
 create policy "website services access by business members"
-  on website_services for all using (has_business_access(business_id));
+  on website_services for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 drop policy if exists "public can read published website services" on website_services;
 create policy "public can read published website services"
-  on website_services for select using (
+  on website_services for select
+  to anon
+  using (
     exists (
       select 1
       from websites w
@@ -673,10 +686,15 @@ alter table website_team_members enable row level security;
 
 drop policy if exists "website team members access by business members" on website_team_members;
 create policy "website team members access by business members"
-  on website_team_members for all using (has_business_access(business_id));
+  on website_team_members for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 drop policy if exists "public can read published website team members" on website_team_members;
 create policy "public can read published website team members"
-  on website_team_members for select using (
+  on website_team_members for select
+  to anon
+  using (
     exists (
       select 1
       from websites w
@@ -709,10 +727,15 @@ alter table website_testimonials enable row level security;
 
 drop policy if exists "website testimonials access by business members" on website_testimonials;
 create policy "website testimonials access by business members"
-  on website_testimonials for all using (has_business_access(business_id));
+  on website_testimonials for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 drop policy if exists "public can read published website testimonials" on website_testimonials;
 create policy "public can read published website testimonials"
-  on website_testimonials for select using (
+  on website_testimonials for select
+  to anon
+  using (
     exists (
       select 1
       from websites w
@@ -736,10 +759,15 @@ alter table website_specialties enable row level security;
 
 drop policy if exists "website specialties access by business members" on website_specialties;
 create policy "website specialties access by business members"
-  on website_specialties for all using (has_business_access(business_id));
+  on website_specialties for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 drop policy if exists "public can read published website specialties" on website_specialties;
 create policy "public can read published website specialties"
-  on website_specialties for select using (
+  on website_specialties for select
+  to anon
+  using (
     exists (
       select 1
       from websites w
@@ -764,10 +792,15 @@ alter table website_faqs enable row level security;
 
 drop policy if exists "website faqs access by business members" on website_faqs;
 create policy "website faqs access by business members"
-  on website_faqs for all using (has_business_access(business_id));
+  on website_faqs for all
+  to authenticated
+  using (has_business_access(business_id))
+  with check (has_business_access(business_id));
 drop policy if exists "public can read published website faqs" on website_faqs;
 create policy "public can read published website faqs"
-  on website_faqs for select using (
+  on website_faqs for select
+  to anon
+  using (
     exists (
       select 1
       from websites w
