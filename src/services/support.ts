@@ -2,16 +2,34 @@ import type { SupportMessage, SupportTicket } from '@/types'
 import type { DbClient } from './_shared'
 
 function toTicket(row: any): SupportTicket {
+  const patientRow = Array.isArray(row.patients) ? row.patients[0] ?? null : row.patients ?? null
+  const appointmentRow = Array.isArray(row.appointments) ? row.appointments[0] ?? null : row.appointments ?? null
+
   return {
     id: row.id,
     businessId: row.business_id,
     patientId: row.patient_id ?? null,
     appointmentId: row.appointment_id ?? null,
     subject: row.subject,
+    description: row.description ?? null,
     status: row.status,
     priority: row.priority,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    patient: patientRow
+      ? {
+          name: patientRow.name,
+          email: patientRow.email ?? null,
+          phone: patientRow.phone ?? null,
+        }
+      : null,
+    appointment: appointmentRow
+      ? {
+          id: appointmentRow.id,
+          scheduledAt: appointmentRow.scheduled_at,
+          status: appointmentRow.status,
+        }
+      : null,
   }
 }
 
@@ -31,14 +49,19 @@ export async function listSupportTickets(supabase: DbClient, businessId: string,
     .from('support_tickets')
     .select('*, patients(name, email, phone), appointments(id, scheduled_at, status)')
     .eq('business_id', businessId)
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
     .limit(limit)
   if (error) throw error
   return (data ?? []).map(toTicket)
 }
 
 export async function getSupportTicket(supabase: DbClient, businessId: string, ticketId: string) {
-  const { data, error } = await supabase.from('support_tickets').select('*').eq('business_id', businessId).eq('id', ticketId).maybeSingle()
+  const { data, error } = await supabase
+    .from('support_tickets')
+    .select('*, patients(name, email, phone), appointments(id, scheduled_at, status)')
+    .eq('business_id', businessId)
+    .eq('id', ticketId)
+    .maybeSingle()
   if (error) throw error
   return data ? toTicket(data) : null
 }

@@ -16,5 +16,5 @@ export default async function SupportPage() {
 
   const tickets = await listSupportTickets(supabase, business.id, 50)
 
-  return <SupportManager initialTickets={tickets} businessId={business.id} />
+  return <SupportManager initialTickets={tickets} businessId={business.id} timezone={business.timezone} businessName={business.name} />
 }

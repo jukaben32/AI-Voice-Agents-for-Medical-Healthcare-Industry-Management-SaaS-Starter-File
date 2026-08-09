@@ -279,10 +279,21 @@ export interface SupportTicket {
   patientId: string | null
   appointmentId: string | null
   subject: string
+  description: string | null
   status: SupportTicketStatus
   priority: 'low' | 'medium' | 'high' | 'urgent'
   createdAt: string
   updatedAt: string
+  patient?: {
+    name: string
+    email: string | null
+    phone: string | null
+  } | null
+  appointment?: {
+    id: string
+    scheduledAt: string
+    status: AppointmentStatus
+  } | null
 }
 
 export interface SupportMessage {
