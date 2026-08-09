@@ -79,6 +79,13 @@ export async function upsertKnowledgeDocument(
 }
 
 export async function deleteKnowledgeDocument(supabase: DbClient, businessId: string, documentId: string) {
-  const { error } = await supabase.from('knowledge_documents').delete().eq('business_id', businessId).eq('id', documentId)
+  const { data, error } = await supabase
+    .from('knowledge_documents')
+    .update({ is_active: false })
+    .eq('business_id', businessId)
+    .eq('id', documentId)
+    .select('*')
+    .single()
   if (error) throw error
+  return toKnowledge(data)
 }

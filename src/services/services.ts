@@ -120,6 +120,5 @@ export async function setClinicServiceActive(supabase: DbClient, businessId: str
 }
 
 export async function deleteClinicService(supabase: DbClient, businessId: string, serviceId: string) {
-  const { error } = await supabase.from('clinic_services').delete().eq('business_id', businessId).eq('id', serviceId)
-  if (error) throw error
+  return setClinicServiceActive(supabase, businessId, serviceId, false)
 }

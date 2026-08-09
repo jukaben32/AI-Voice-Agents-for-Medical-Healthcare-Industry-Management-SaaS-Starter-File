@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { KnowledgeDocument } from '@/types'
 import { createClient } from '@/lib/supabase/client'
-import { upsertKnowledgeDocument, deleteKnowledgeDocument } from '@/services/faqs'
-import { SectionEyebrow, SectionHeading, SurfaceCard, StatusBadge } from '@/components/clinic/shared'
+import { deleteKnowledgeDocument, upsertKnowledgeDocument } from '@/services/faqs'
+import { SectionEyebrow, SectionHeading, StatusBadge, SurfaceCard } from '@/components/clinic/shared'
 
 export function KnowledgeManager({ initialDocuments, businessId }: { initialDocuments: KnowledgeDocument[]; businessId: string }) {
   const [documents, setDocuments] = useState(initialDocuments)
@@ -21,6 +21,7 @@ export function KnowledgeManager({ initialDocuments, businessId }: { initialDocu
       setError('La pregunta y la respuesta son requeridas')
       return
     }
+
     setSaving(true)
     try {
       const supabase = createClient()
@@ -34,7 +35,7 @@ export function KnowledgeManager({ initialDocuments, businessId }: { initialDocu
       setQuestion('')
       setAnswer('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar el artículo')
+      setError(err instanceof Error ? err.message : 'No se pudo guardar el articulo')
     } finally {
       setSaving(false)
     }
@@ -51,14 +52,14 @@ export function KnowledgeManager({ initialDocuments, businessId }: { initialDocu
       catalogKey: doc.catalogKey,
       isActive: !doc.isActive,
     })
-    setDocuments((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
+    setDocuments((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
   }
 
   async function remove(doc: KnowledgeDocument) {
-    if (!confirm(`¿Eliminar "${doc.title}"?`)) return
+    if (!window.confirm(`Deactivate "${doc.title}"? This keeps the record but removes it from the active knowledge list.`)) return
     const supabase = createClient()
-    await deleteKnowledgeDocument(supabase, businessId, doc.id)
-    setDocuments((prev) => prev.filter((d) => d.id !== doc.id))
+    const updated = await deleteKnowledgeDocument(supabase, businessId, doc.id)
+    setDocuments((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
   }
 
   return (
@@ -73,7 +74,7 @@ export function KnowledgeManager({ initialDocuments, businessId }: { initialDocu
         <div className="grid gap-4">
           {documents.length === 0 && (
             <SurfaceCard className="p-5">
-              <p className="text-sm text-[var(--text-muted)]">No hay artículos todavía — crea el primero con el panel de la derecha.</p>
+              <p className="text-sm text-[var(--text-muted)]">No hay articulos todavia - crea el primero con el panel de la derecha.</p>
             </SurfaceCard>
           )}
           {documents.map((doc) => (
@@ -84,7 +85,7 @@ export function KnowledgeManager({ initialDocuments, businessId }: { initialDocu
                   <button type="button" onClick={() => void toggleActive(doc)}>
                     <StatusBadge tone={doc.isActive ? 'emerald' : 'slate'}>{doc.isActive ? 'Active' : 'Inactive'}</StatusBadge>
                   </button>
-                  <button type="button" onClick={() => void remove(doc)} className="text-[var(--coral)]" aria-label="Delete article">
+                  <button type="button" onClick={() => void remove(doc)} className="text-[var(--coral)]" aria-label="Deactivate article">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -120,7 +121,7 @@ export function KnowledgeManager({ initialDocuments, businessId }: { initialDocu
             </div>
             <button type="submit" disabled={saving} className="btn-primary w-full justify-center">
               <Plus className="h-4 w-4" />
-              {saving ? 'Saving…' : 'Add article'}
+              {saving ? 'Guardando...' : 'Add article'}
             </button>
           </form>
         </SurfaceCard>

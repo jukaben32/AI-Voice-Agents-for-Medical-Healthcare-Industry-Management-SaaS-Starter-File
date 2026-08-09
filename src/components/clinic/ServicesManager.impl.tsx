@@ -254,7 +254,7 @@ function ServiceRow({
           type="button"
           onClick={onDelete}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-soft)] bg-white text-[var(--coral)] transition hover:bg-[rgba(251,113,133,0.08)]"
-          aria-label={`Delete ${service.name}`}
+          aria-label={`Desactivar ${service.name}`}
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -773,14 +773,14 @@ export function ServicesManager({
   }
 
   async function handleDelete(service: ClinicService) {
-    if (!window.confirm(`Delete ${service.name}?`)) return
+    if (!window.confirm(`Desactivar ${service.name}? Esto mantiene el servicio pero lo saca del catalogo activo.`)) return
     const supabase = createClient()
-    await deleteClinicService(supabase, businessId, service.id)
-    setServices((current) => current.filter((item) => item.id !== service.id))
+    const updated = await deleteClinicService(supabase, businessId, service.id)
+    setServices((current) => current.map((item) => (item.id === updated.id ? updated : item)))
     setSelectedTemplateKeys((current) => current.filter((key) => key !== normalizeServiceKey(service.name)))
     pushToast({
-      title: 'Service deleted',
-      message: `${service.name} has been removed from the catalog.`,
+      title: 'Servicio desactivado',
+      message: `${service.name} ahora esta inactivo y oculto de los flujos activos de reserva.`,
       tone: 'slate',
     })
   }
