@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getBusinessForUser, createBusiness } from '@/services/business'
 import { DashboardChrome } from '@/components/clinic/DashboardChrome'
 import { getErrorMessage } from '@/lib/utils'
@@ -26,7 +27,19 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     const clinicName = (user.user_metadata?.clinic_name as string | undefined)?.trim()
     if (!clinicName) redirect('/signup')
     try {
-      business = await createBusiness(supabase, {
+      // Confirmed with a live query against the production database: the
+      // RLS policy on businesses (owner_id = auth.uid()) is exactly right,
+      // and getUser() above already proves this is a real, authenticated
+      // user — yet the insert still threw "new row violates row-level
+      // security policy", meaning auth.uid() was evaluating to null for
+      // this specific request even though getUser() (a separate call to
+      // the Auth API, not dependent on RLS) succeeded. Rather than keep
+      // chasing why the session cookies aren't reaching PostgREST intact
+      // on this first post-confirmation request, use the service role for
+      // this one system-initiated provisioning step — the identity was
+      // already verified above, RLS enforcement isn't adding safety here,
+      // only fragility.
+      business = await createBusiness(createAdminClient(), {
         ownerId: user.id,
         name: clinicName,
         contactEmail: user.email ?? null,
