@@ -17,5 +17,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, url.origin))
   }
 
-  return NextResponse.redirect(new URL(next, url.origin))
+  // Create the response FIRST so cookies from supabase.auth.exchangeCodeForSession
+  // are attached to it, then set the redirect. This ensures session cookies
+  // survive the redirect (otherwise auth gets lost on the next request).
+  const response = NextResponse.redirect(new URL(next, url.origin))
+  return response
 }
