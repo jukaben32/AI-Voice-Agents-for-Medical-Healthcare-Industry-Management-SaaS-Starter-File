@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getBusinessForUser } from '@/services/business'
 import { listAppointmentsForBusiness } from '@/services/appointments'
-import { CalendarManager } from '@/components/clinic/CalendarManager'
+import { getDateKeyInTimeZone } from '@/services/_shared'
+import { ScheduleManager } from '@/components/clinic/ScheduleManager'
 
 export default async function SchedulePage() {
   const supabase = await createClient()
@@ -14,20 +15,23 @@ export default async function SchedulePage() {
   const business = await getBusinessForUser(supabase, user.id)
   if (!business) redirect('/signup')
 
-  const now = new Date()
-  const weekStart = new Date(now)
-  weekStart.setHours(0, 0, 0, 0)
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 7)
+  const allAppointments = await listAppointmentsForBusiness(supabase, business.id, { limit: 500 })
+  const todayKey = getDateKeyInTimeZone(new Date(), business.timezone)
+  const appointmentDateKeys = Array.from(
+    new Set(allAppointments.map((appointment) => getDateKeyInTimeZone(new Date(appointment.scheduledAt), business.timezone)))
+  ).sort()
+  const initialSelectedDateKey =
+    appointmentDateKeys.find((dateKey) => dateKey >= todayKey) ??
+    appointmentDateKeys[appointmentDateKeys.length - 1] ??
+    todayKey
 
-  const allAppointments = await listAppointmentsForBusiness(supabase, business.id, { limit: 300 })
-  const weekAppointments = allAppointments.filter((a) => {
-    const t = new Date(a.scheduledAt).getTime()
-    return t >= weekStart.getTime() && t < weekEnd.getTime()
-  })
-
-  const weekLabel = `${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(weekStart)} - ${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(weekEnd.getTime() - 1))}`
-
-  return <CalendarManager weekAppointments={weekAppointments} weekLabel={weekLabel} timezone={business.timezone} />
+  return (
+    <ScheduleManager
+      initialAppointments={allAppointments}
+      timezone={business.timezone}
+      businessName={business.name}
+      initialSelectedDateKey={initialSelectedDateKey}
+      todayKey={todayKey}
+    />
+  )
 }
