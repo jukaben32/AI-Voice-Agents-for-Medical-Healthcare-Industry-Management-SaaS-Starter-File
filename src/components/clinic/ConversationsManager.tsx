@@ -140,31 +140,28 @@ function TranscriptMessage({ message }: { message: ConversationMessage }) {
   const isCaller = message.role === 'caller'
   const isSystem = message.role === 'system'
   const isAgent = message.role === 'agent'
-
+  const badgeText = isSystem ? 'SYS' : isAgent ? 'AI' : 'PT'
+  const badgeBg = isSystem ? 'var(--text-muted)' : isAgent ? 'var(--brand)' : 'var(--text-strong)'
+  const badgeTextClass = isCaller ? 'text-[var(--text-strong)]' : 'text-white'
   const bubbleTone = isAgent
-    ? 'bg-[var(--brand-soft)] border-[var(--border-soft)] text-[var(--text-strong)]'
+    ? 'border-[rgba(19,122,114,0.18)] bg-[rgba(19,122,114,0.08)] text-[var(--text-strong)]'
     : isCaller
-      ? 'bg-[var(--panel-soft)] border-[var(--border-soft)] text-[var(--text-strong)]'
-      : 'bg-[rgba(15,33,41,0.04)] border-[var(--border-soft)] text-[var(--text-muted)]'
-  const badgeText = isAgent ? 'AI' : isCaller ? 'PT' : 'SYS'
-  const badgeBg = isAgent ? 'var(--brand)' : isCaller ? 'var(--text-strong)' : 'var(--text-muted)'
+      ? 'border-[var(--border-soft)] bg-white/90 text-[var(--text-strong)]'
+      : 'border-[var(--border-soft)] bg-[var(--panel-soft)] text-[var(--text-muted)]'
 
   return (
     <div className="flex items-start gap-3">
-      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-bold text-white" style={{ background: badgeBg }}>
+      <div
+        className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-[10px] font-bold ${badgeTextClass}`}
+        style={{
+          background: badgeBg,
+          borderColor: isSystem ? 'var(--border-soft)' : 'transparent',
+        }}
+      >
         {badgeText}
       </div>
-      <div className={`flex-1 rounded-[18px] border px-4 py-3 ${bubbleTone}`}>
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{message.role}</div>
-          <div className="text-[11px] text-[var(--text-muted)]">
-            {new Intl.DateTimeFormat('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-            }).format(new Date(message.createdAt))}
-          </div>
-        </div>
-        <div className="mt-2 whitespace-pre-wrap text-sm leading-6">{message.content}</div>
+      <div className={`flex-1 rounded-[18px] border px-4 py-3 shadow-[0_14px_30px_-24px_rgba(15,33,41,0.3)] ${bubbleTone}`}>
+        <div className="whitespace-pre-wrap text-sm leading-6">{message.content}</div>
         {isSystem ? <div className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">system event</div> : null}
       </div>
     </div>
@@ -270,9 +267,10 @@ export function ConversationsManager({
   const selectedMessages = selectedConversationId ? selectedTranscript?.messages ?? [] : []
   const activeTranscript = selectedTranscript?.conversation ?? selectedConversation
   const transcriptTitle = activeTranscript
-    ? `${formatExactDate(activeTranscript.startedAt, timezone)} - ${selectedPatient?.name ?? 'Unknown caller'}`
+    ? `${formatExactDate(activeTranscript.startedAt, timezone)} · ${selectedPatient?.name ?? 'Unknown caller'}`
     : ''
   const transcriptSummary = activeTranscript?.transcriptSummary ?? selectedTranscript?.conversation.transcriptSummary ?? null
+  const tableGridTemplate = 'minmax(0,1.7fr) minmax(0,0.82fr) minmax(0,0.82fr) minmax(0,0.82fr) minmax(0,0.82fr) minmax(0,0.95fr) 44px'
 
   function openTranscript(conversationId: string) {
     setSelectedConversationId(conversationId)
@@ -285,72 +283,60 @@ export function ConversationsManager({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/72 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-strong)] backdrop-blur-sm">
-            Call Log
-          </div>
-          <h1 className="mt-4 font-display text-4xl font-semibold tracking-[-0.05em] text-[var(--text-strong)] md:text-5xl">
-            Patient call history and transcripts
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--text-muted)] md:text-base">
-            Review every call in real time, filter by status, and open the transcript from the row or the duration chip.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:items-end">
-          <StatusBadge tone="teal">{businessName}</StatusBadge>
-          <div className="inline-flex items-center gap-3 rounded-full border border-[var(--border-soft)] bg-white/78 px-4 py-3 text-sm text-[var(--text-muted)] backdrop-blur-sm">
-            <Search className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">Search...</span>
-            <span className="rounded-full border border-[var(--border-soft)] bg-[var(--panel-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              Ctrl K
-            </span>
-          </div>
-          <div className="text-[11px] font-medium text-[var(--text-muted)]">
-            {NUMBER_FORMAT.format(bookedCalls)} booked, {NUMBER_FORMAT.format(activeCalls)} active
-          </div>
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
-            {NUMBER_FORMAT.format(totalCalls)} total calls
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-5">
       <SurfaceCard className="overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-[var(--border-soft)] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">Call Log</div>
-            <h2 className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
-              {NUMBER_FORMAT.format(visibleConversations.length)} total calls
+        <div className="flex flex-col gap-5 border-b border-[var(--border-soft)] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/78 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-strong)] backdrop-blur-sm">
+              Call Log
+            </div>
+            <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em] text-[var(--text-strong)] md:text-4xl">
+              Patient call history and transcripts
             </h2>
+            <p className="mt-2 max-w-xl text-sm leading-7 text-[var(--text-muted)]">
+              Review every call in real time, filter by status, and open the transcript from the duration chip or chevron.
+            </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="relative flex-1 sm:min-w-[320px]">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by patient name or phone..."
-                className="h-12 w-full rounded-full border border-[var(--border-soft)] bg-white/86 pl-11 pr-20 text-sm text-[var(--text-strong)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--brand)]/40 focus:ring-2 focus:ring-[var(--brand)]/12"
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-[var(--border-soft)] bg-[var(--panel-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                Ctrl K
-              </span>
-            </label>
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as ConversationStatusFilter)}
-                className="h-12 w-full min-w-[180px] appearance-none rounded-full border border-[var(--border-soft)] bg-white/86 px-4 pr-10 text-sm text-[var(--text-strong)] outline-none transition focus:border-[var(--brand)]/40 focus:ring-2 focus:ring-[var(--brand)]/12"
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">v</span>
+
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto lg:min-w-[420px] lg:flex-col lg:items-end">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
+              <label className="relative flex-1 sm:min-w-[300px]">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search by patient name or phone..."
+                  className="h-12 w-full rounded-full border border-[var(--border-soft)] bg-white/86 pl-11 pr-20 text-sm text-[var(--text-strong)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--brand)]/40 focus:ring-2 focus:ring-[var(--brand)]/12"
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-[var(--border-soft)] bg-[var(--panel-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                  Ctrl K
+                </span>
+              </label>
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value as ConversationStatusFilter)}
+                  className="h-12 w-full min-w-[180px] appearance-none rounded-full border border-[var(--border-soft)] bg-white/86 px-4 pr-10 text-sm text-[var(--text-strong)] outline-none transition focus:border-[var(--brand)]/40 focus:ring-2 focus:ring-[var(--brand)]/12"
+                >
+                  {STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">v</span>
+              </div>
+            </div>
+
+            <div className="flex w-full items-center justify-between gap-3 text-[11px] font-medium text-[var(--text-muted)] lg:w-auto lg:justify-end">
+              <StatusBadge tone="slate">{businessName}</StatusBadge>
+              <div className="flex flex-wrap items-center gap-2">
+                <span>{NUMBER_FORMAT.format(totalCalls)} total</span>
+                <span>•</span>
+                <span>{NUMBER_FORMAT.format(bookedCalls)} booked</span>
+                <span>•</span>
+                <span>{NUMBER_FORMAT.format(activeCalls)} active</span>
+              </div>
             </div>
           </div>
         </div>
@@ -358,9 +344,7 @@ export function ConversationsManager({
         <div className="overflow-x-auto">
           <div
             className="grid gap-3 border-b border-[var(--border-soft)] bg-[rgba(16,33,41,0.03)] px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]"
-            style={{
-              gridTemplateColumns: 'minmax(0,1.7fr) minmax(0,0.82fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,0.82fr) minmax(0,0.95fr) 24px',
-            }}
+            style={{ gridTemplateColumns: tableGridTemplate }}
           >
             <div>Patient</div>
             <div>Status</div>
@@ -398,15 +382,10 @@ export function ConversationsManager({
                 const appointmentBooked = isBookedConversation(conversation)
 
                 return (
-                  <button
+                  <div
                     key={conversation.id}
-                    type="button"
-                    onClick={() => openTranscript(conversation.id)}
-                    className="grid w-full gap-3 px-6 py-4 text-left transition hover:bg-[var(--panel-soft)]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/20"
-                    title={`Open transcript for ${patientName}`}
-                    style={{
-                      gridTemplateColumns: 'minmax(0,1.7fr) minmax(0,0.82fr) minmax(0,0.72fr) minmax(0,0.82fr) minmax(0,0.82fr) minmax(0,0.95fr) 24px',
-                    }}
+                    className="grid gap-3 px-6 py-4 transition hover:bg-[var(--panel-soft)]/70"
+                    style={{ gridTemplateColumns: tableGridTemplate }}
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[16px] bg-[var(--brand)] text-[11px] font-semibold text-white shadow-[0_16px_30px_-20px_rgba(19,122,114,0.7)]">
@@ -429,10 +408,20 @@ export function ConversationsManager({
                     </div>
 
                     <div className="flex items-center">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/78 px-3 py-1.5 text-sm font-semibold text-[var(--brand-strong)]">
-                        <Clock3 className="h-3.5 w-3.5" />
-                        {durationLabel}
-                      </span>
+                      {durationLabel !== '-' ? (
+                        <button
+                          type="button"
+                          onClick={() => openTranscript(conversation.id)}
+                          aria-label={`Open transcript for ${patientName}`}
+                          title={`Open transcript for ${patientName}`}
+                          className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--brand-strong)] transition hover:border-[var(--brand)]/25 hover:bg-[var(--brand-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/20"
+                        >
+                          <Clock3 className="h-3.5 w-3.5" />
+                          {durationLabel}
+                        </button>
+                      ) : (
+                        <span className="text-sm text-[var(--text-muted)]">-</span>
+                      )}
                     </div>
 
                     <div className="flex items-center">
@@ -456,9 +445,17 @@ export function ConversationsManager({
                     </div>
 
                     <div className="flex items-center justify-end text-[var(--text-muted)]">
-                      <ChevronRight className="h-4 w-4" />
+                      <button
+                        type="button"
+                        onClick={() => openTranscript(conversation.id)}
+                        aria-label={`Open transcript for ${patientName}`}
+                        title={`Open transcript for ${patientName}`}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-soft)] bg-white/80 text-[var(--text-muted)] transition hover:border-[var(--brand)]/25 hover:text-[var(--brand-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/20"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     </div>
-                  </button>
+                  </div>
                 )
               })
             )}
@@ -471,7 +468,7 @@ export function ConversationsManager({
         onClose={closeTranscript}
         title="Call Transcript"
         description={activeTranscript ? transcriptTitle : undefined}
-        className="max-w-[760px]"
+        className="max-w-[720px]"
       >
         <div className="space-y-5">
           {activeTranscript ? (
@@ -480,13 +477,7 @@ export function ConversationsManager({
                 {getConversationStatus(activeTranscript).label}
               </StatusBadge>
               {isBookedConversation(activeTranscript) ? <StatusBadge tone="emerald">Booked</StatusBadge> : null}
-              <StatusBadge tone="slate">{getChannelLabel(activeTranscript.channel)}</StatusBadge>
               <StatusBadge tone="slate">{activeTranscript.durationSeconds > 0 ? formatDuration(activeTranscript.durationSeconds) : 'No duration'}</StatusBadge>
-              {getSentimentMeta(activeTranscript.sentiment) ? (
-                <StatusBadge tone={getSentimentMeta(activeTranscript.sentiment)!.tone}>
-                  {getSentimentMeta(activeTranscript.sentiment)!.label}
-                </StatusBadge>
-              ) : null}
             </div>
           ) : null}
 
