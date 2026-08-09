@@ -34,11 +34,22 @@ export function toTitleCase(value: string) {
 
 export function formatCurrency(amount: number | null | undefined, currency = 'USD') {
   if (amount == null || Number.isNaN(amount)) return ''
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
-  }).format(amount)
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    }).format(amount)
+  } catch {
+    const formatted =
+      amount === 0
+        ? '0.00'
+        : new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2,
+          }).format(amount)
+    return `${formatted} ${currency}`
+  }
 }
 
 export function clamp(value: number, min: number, max: number) {
