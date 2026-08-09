@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getBusinessForUser, createBusiness } from '@/services/business'
 import { DashboardChrome } from '@/components/clinic/DashboardChrome'
+import { getErrorMessage } from '@/lib/utils'
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient()
@@ -45,7 +46,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               Something went wrong creating your clinic account. Please try signing in again, or contact support if this keeps happening.
             </p>
             <p className="text-xs text-[var(--text-muted)]">
-              {err instanceof Error ? err.message : 'Unknown error'}
+              {getErrorMessage(err)}
             </p>
             <a href="/login" className="btn-primary inline-flex">
               Back to sign in

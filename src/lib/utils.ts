@@ -44,3 +44,16 @@ export function formatCurrency(amount: number | null | undefined, currency = 'US
 export function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max)
 }
+
+// Supabase/Postgrest errors are plain objects ({ message, code, details,
+// hint }), not `Error` instances — `err instanceof Error` misses them and
+// falls back to a useless "Unknown error". This reads `.message` off
+// anything that has one before giving up.
+export function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
+    return (err as { message: string }).message
+  }
+  if (typeof err === 'string') return err
+  return 'Unknown error'
+}

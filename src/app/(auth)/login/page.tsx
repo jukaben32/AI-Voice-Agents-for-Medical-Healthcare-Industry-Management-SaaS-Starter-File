@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BrandMark, SectionEyebrow, SurfaceCard } from '@/components/clinic/shared'
+import { getErrorMessage } from '@/lib/utils'
 
 export default function LoginPage() {
   return (
@@ -28,17 +29,22 @@ function LoginForm() {
     setError(null)
     setLoading(true)
 
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
+    try {
+      const supabase = createClient()
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (authError) {
-      setError(authError.message)
-      return
+      if (authError) {
+        setError(authError.message)
+        return
+      }
+
+      router.push(searchParams.get('redirect') || '/dashboard')
+      router.refresh()
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
     }
-
-    router.push(searchParams.get('redirect') || '/dashboard')
-    router.refresh()
   }
 
   return (

@@ -6,6 +6,7 @@ import { Eye, EyeOff, ArrowLeft, MailCheck, Rocket } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { createBusiness } from '@/services/business'
 import { BrandMark, SectionEyebrow, SurfaceCard } from '@/components/clinic/shared'
+import { getErrorMessage } from '@/lib/utils'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -33,58 +34,60 @@ export default function SignupPage() {
     }
 
     setLoading(true)
-    const supabase = createClient()
-    const { data, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName, clinic_name: clinicName },
-        // Must point at /api/auth/callback, not straight at /login — that
-        // route is what actually calls exchangeCodeForSession() to turn the
-        // confirmation link's code into a real session. Pointing directly
-        // at /login skipped that exchange entirely, so the confirmation
-        // link never logged anyone in (this was the actual bug behind
-        // "confirmé el correo y me salió una pantalla en blanco").
-        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
-      },
-    })
-
-    if (authError) {
-      setLoading(false)
-      setError(authError.message)
-      return
-    }
-
-    // An existing, already-confirmed account signing up again comes back
-    // with a user but an empty identities array and no error.
-    if (data.user && data.user.identities && data.user.identities.length === 0) {
-      setLoading(false)
-      setError('Ya existe una cuenta con este correo. Intenta iniciar sesión.')
-      return
-    }
-
-    if (!data.session) {
-      setLoading(false)
-      setPendingEmail(email)
-      return
-    }
-
+    // Everything below can throw for reasons that have nothing to do with
+    // a normal { data, error } auth failure — createClient() itself throws
+    // if the Supabase env vars aren't in this bundle, and a network hiccup
+    // can reject signUp()'s promise outright. None of that used to be
+    // caught, so it crashed the whole page as an uncaught client-side
+    // exception instead of showing a message.
     try {
+      const supabase = createClient()
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName, clinic_name: clinicName },
+          // Must point at /api/auth/callback, not straight at /login — that
+          // route is what actually calls exchangeCodeForSession() to turn the
+          // confirmation link's code into a real session. Pointing directly
+          // at /login skipped that exchange entirely, so the confirmation
+          // link never logged anyone in (this was the actual bug behind
+          // "confirmé el correo y me salió una pantalla en blanco").
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard`,
+        },
+      })
+
+      if (authError) {
+        setError(authError.message)
+        return
+      }
+
+      // An existing, already-confirmed account signing up again comes back
+      // with a user but an empty identities array and no error.
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        setError('Ya existe una cuenta con este correo. Intenta iniciar sesión.')
+        return
+      }
+
+      if (!data.session) {
+        setPendingEmail(email)
+        return
+      }
+
       await createBusiness(supabase, {
         ownerId: data.user!.id,
         name: clinicName,
         contactEmail: email,
         phone: phone || null,
       })
-    } catch (err) {
-      setLoading(false)
-      setError(err instanceof Error ? err.message : 'No se pudo crear la clínica')
-      return
-    }
 
-    setLoading(false)
-    router.push('/dashboard')
-    router.refresh()
+      router.push('/dashboard')
+      router.refresh()
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (pendingEmail) {
