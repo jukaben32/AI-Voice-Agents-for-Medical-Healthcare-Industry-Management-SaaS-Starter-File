@@ -123,9 +123,14 @@ export async function getBusinessForUser(supabase: DbClient, userId: string) {
   if (membershipError) throw membershipError
   if (!membership?.[0]?.business_id) return null
 
-  const { data: business, error: businessError } = await supabase.from('businesses').select('*').eq('id', membership[0].business_id).maybeSingle()
+  const { data: business, error: businessError } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('id', membership[0].business_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
   if (businessError) throw businessError
-  return business ? toBusiness(business) : null
+  return business?.[0] ? toBusiness(business[0]) : null
 }
 
 export async function getBusinessMembership(supabase: DbClient, businessId: string, userId: string) {
