@@ -2,13 +2,20 @@ import type { Widget, WidgetConfig } from '@/types'
 import { DEFAULT_APPOINTMENT_SLOT_MINUTES, DEFAULT_PRIMARY_COLOR, DEFAULT_SECONDARY_COLOR, DEFAULT_WIDGET_TONE, DEFAULT_WELCOME_MESSAGE } from '@/constants'
 import type { DbClient } from './_shared'
 
+export type WidgetListItem = Widget & {
+  agentName: string | null
+}
+
 function toWidget(row: any): Widget {
   return {
     id: row.id,
     businessId: row.business_id,
     agentId: row.agent_id ?? null,
+    name: row.name,
     slug: row.slug,
     enabled: row.enabled,
+    position: row.position ?? 'bottom-right',
+    theme: row.theme ?? 'light',
     primaryColor: row.primary_color,
     secondaryColor: row.secondary_color,
     tone: row.tone,
@@ -16,6 +23,8 @@ function toWidget(row: any): Widget {
     allowedOrigins: row.allowed_origins ?? [],
     slotDuration: row.slot_duration ?? DEFAULT_APPOINTMENT_SLOT_MINUTES,
     showBranding: row.show_branding,
+    impressions: row.impressions ?? 0,
+    interactions: row.interactions ?? 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -41,7 +50,7 @@ export async function listWidgetsForBusiness(supabase: DbClient, businessId: str
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  return (data ?? []).map((row: any) => {
+  return (data ?? []).map((row: any): WidgetListItem => {
     const widget = toWidget(row)
     return {
       ...widget,

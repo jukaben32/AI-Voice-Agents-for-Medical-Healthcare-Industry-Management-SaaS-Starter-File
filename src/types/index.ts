@@ -217,8 +217,11 @@ export interface Widget {
   id: string
   businessId: string
   agentId: string | null
+  name: string
   slug: string
   enabled: boolean
+  position: string
+  theme: string
   primaryColor: string
   secondaryColor: string
   tone: string
@@ -226,6 +229,8 @@ export interface Widget {
   allowedOrigins: string[]
   slotDuration: number
   showBranding: boolean
+  impressions: number
+  interactions: number
   createdAt: string
   updatedAt: string
 }
