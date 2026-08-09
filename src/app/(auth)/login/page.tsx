@@ -7,6 +7,29 @@ import { createClient } from '@/lib/supabase/client'
 import { BrandMark, SectionEyebrow, SurfaceCard } from '@/components/clinic/shared'
 import { getErrorMessage } from '@/lib/utils'
 
+const DASHBOARD_BASE = 'http://localhost'
+
+function normalizeDashboardNext(input: string | null) {
+  if (!input) {
+    return '/dashboard'
+  }
+
+  try {
+    const nextUrl = new URL(input, DASHBOARD_BASE)
+    if (nextUrl.origin !== DASHBOARD_BASE) {
+      return '/dashboard'
+    }
+
+    if (nextUrl.pathname !== '/dashboard' && !nextUrl.pathname.startsWith('/dashboard/')) {
+      return '/dashboard'
+    }
+
+    return `${nextUrl.pathname}${nextUrl.search}`
+  } catch {
+    return '/dashboard'
+  }
+}
+
 export default function LoginPage() {
   return (
     <Suspense>
@@ -23,6 +46,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const redirectTarget = normalizeDashboardNext(searchParams.get('redirect'))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,7 +62,7 @@ function LoginForm() {
         return
       }
 
-      router.push(searchParams.get('redirect') || '/dashboard')
+      router.push(redirectTarget)
       router.refresh()
     } catch (err) {
       setError(getErrorMessage(err))

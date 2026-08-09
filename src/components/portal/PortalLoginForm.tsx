@@ -8,12 +8,16 @@ import { SectionEyebrow } from '@/components/clinic/shared'
 const PORTAL_BASE = 'http://localhost'
 const PORTAL_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
+function isPortalPath(pathname: string) {
+  return pathname === '/portal' || pathname.startsWith('/portal/')
+}
+
 function extractPortalBusinessSlug(redirect: string | null) {
   if (!redirect) return ''
 
   try {
     const url = new URL(redirect, PORTAL_BASE)
-    if (url.pathname === '/portal/login' || url.pathname === '/portal/register' || !url.pathname.startsWith('/portal')) {
+    if (url.pathname === '/portal/login' || url.pathname === '/portal/register' || !isPortalPath(url.pathname)) {
       return ''
     }
 
@@ -32,7 +36,7 @@ function buildPortalNextTarget(nextPath: string | null, businessSlug: string) {
 
   try {
     const url = new URL(nextPath, PORTAL_BASE)
-    if (url.pathname === '/portal/login' || url.pathname === '/portal/register' || !url.pathname.startsWith('/portal')) {
+    if (url.pathname === '/portal/login' || url.pathname === '/portal/register' || !isPortalPath(url.pathname)) {
       return fallback
     }
 

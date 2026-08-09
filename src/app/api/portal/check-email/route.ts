@@ -5,6 +5,10 @@ import { portalCheckEmailSchema } from '@/validations'
 import { getBusinessBySlug } from '@/services/business'
 import { getPatientByEmail } from '@/services/patients'
 
+function isPortalPath(pathname: string) {
+  return pathname === '/portal' || pathname.startsWith('/portal/')
+}
+
 function normalizePortalNext(input: string | null, fallback: string) {
   if (!input) {
     return fallback
@@ -15,7 +19,7 @@ function normalizePortalNext(input: string | null, fallback: string) {
     if (
       nextUrl.pathname === '/portal/login' ||
       nextUrl.pathname === '/portal/register' ||
-      !nextUrl.pathname.startsWith('/portal')
+      !isPortalPath(nextUrl.pathname)
     ) {
       return fallback
     }
