@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowUpRight,
@@ -135,10 +135,12 @@ export function SectionHeading({
 export function SurfaceCard({
   children,
   className,
+  style,
   glow = false,
 }: {
   children: ReactNode
   className?: string
+  style?: CSSProperties
   glow?: boolean
   }) {
   return (
@@ -152,6 +154,7 @@ export function SurfaceCard({
         boxShadow: glow
           ? '0 24px 72px -44px rgba(19, 122, 114, 0.42)'
           : '0 18px 60px -42px rgba(15, 33, 41, 0.34)',
+        ...style,
       }}
     >
       {children}
