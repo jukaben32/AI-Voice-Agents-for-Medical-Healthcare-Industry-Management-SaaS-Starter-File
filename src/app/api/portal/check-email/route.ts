@@ -5,6 +5,27 @@ import { portalCheckEmailSchema } from '@/validations'
 import { getBusinessBySlug } from '@/services/business'
 import { getPatientByEmail } from '@/services/patients'
 
+function normalizePortalNext(input: string | null, fallback: string) {
+  if (!input) {
+    return fallback
+  }
+
+  try {
+    const nextUrl = new URL(input, new URL(fallback, 'http://localhost').origin)
+    if (
+      nextUrl.pathname === '/portal/login' ||
+      nextUrl.pathname === '/portal/register' ||
+      !nextUrl.pathname.startsWith('/portal')
+    ) {
+      return fallback
+    }
+
+    return `${nextUrl.pathname}${nextUrl.search}`
+  } catch {
+    return fallback
+  }
+}
+
 export async function POST(request: Request) {
   const origin = new URL(request.url).origin
   let body: unknown
@@ -33,7 +54,9 @@ export async function POST(request: Request) {
   const patient = await getPatientByEmail(admin, business.id, parsed.data.email)
   const supabase = await createServerSupabaseClient()
   const redirectUrl = new URL('/api/auth/callback', origin)
-  redirectUrl.searchParams.set('next', `/portal?businessSlug=${encodeURIComponent(business.slug)}`)
+  const defaultNext = `/portal?businessSlug=${encodeURIComponent(business.slug)}`
+  const requestedNext = parsed.data.next || new URL(request.url).searchParams.get('next')
+  redirectUrl.searchParams.set('next', normalizePortalNext(requestedNext, defaultNext))
 
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data.email,

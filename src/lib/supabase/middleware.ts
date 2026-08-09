@@ -55,7 +55,9 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && (isDashboardProtected || isPortalProtected)) {
     const redirectUrl = new URL(isPortalProtected ? '/portal/login' : '/login', request.url)
-    redirectUrl.searchParams.set('redirect', path)
+    // Preserve the original query string so portal access links keep their
+    // businessSlug when unauthenticated users are bounced to the login page.
+    redirectUrl.searchParams.set('redirect', `${path}${request.nextUrl.search}`)
     return NextResponse.redirect(redirectUrl)
   }
 

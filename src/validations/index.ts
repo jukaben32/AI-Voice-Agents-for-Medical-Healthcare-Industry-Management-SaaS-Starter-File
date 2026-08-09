@@ -105,6 +105,7 @@ export const appointmentPaymentSchema = z.object({
 export const portalCheckEmailSchema = z.object({
   email: z.string().email(),
   businessSlug: z.string().optional(),
+  next: z.string().optional(),
 })
 
 export const portalRecordPaymentSchema = z.object({

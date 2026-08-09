@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import {
   ArrowRight,
   CalendarDays,
@@ -43,6 +43,7 @@ import {
   X,
 } from 'lucide-react'
 
+import { PortalLoginForm } from '@/components/portal/PortalLoginForm'
 import { cn } from '@/lib/utils'
 
 import {
@@ -768,21 +769,17 @@ export function PortalLoginScreen() {
         </div>
       </SurfaceCard>
       <SurfaceCard className="p-8">
-        <div className="max-w-md">
-          <SectionEyebrow>Portal login</SectionEyebrow>
-          <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-strong)]">Welcome back</h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">Sign in with your email or receive a magic link to continue.</p>
-          <div className="mt-8 space-y-4">
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-[var(--text-strong)]">Email address</div>
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">patient@email.com</div>
+        <Suspense
+          fallback={
+            <div className="max-w-md space-y-4">
+              <SectionEyebrow>Portal login</SectionEyebrow>
+              <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-strong)]">Welcome back</h2>
+              <p className="text-sm leading-7 text-[var(--text-muted)]">Loading the login form...</p>
             </div>
-            <ButtonLink href="/portal" icon="arrow">
-              Send magic link
-            </ButtonLink>
-            <div className="text-center text-sm text-[var(--text-muted)]">Or use your appointment code and OTP from SMS.</div>
-          </div>
-        </div>
+          }
+        >
+          <PortalLoginForm />
+        </Suspense>
       </SurfaceCard>
     </div>
   )
