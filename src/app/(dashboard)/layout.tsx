@@ -6,15 +6,51 @@ import { getBusinessForUser, createBusiness } from '@/services/business'
 import { DashboardChrome } from '@/components/clinic/DashboardChrome'
 import { getErrorMessage } from '@/lib/utils'
 
+function ErrorScreen({ title, body, detail }: { title: string; body: string; detail: string }) {
+  return (
+    <div className="grid min-h-screen place-items-center bg-[var(--page-bg)] px-4 text-center">
+      <div className="max-w-md space-y-3">
+        <h1 className="font-display text-2xl font-bold text-[var(--text-strong)]">{title}</h1>
+        <p className="text-sm text-[var(--text-muted)]">{body}</p>
+        <p className="text-xs text-[var(--text-muted)]">{detail}</p>
+        <a href="/login" className="btn-primary inline-flex">
+          Back to sign in
+        </a>
+      </div>
+    </div>
+  )
+}
+
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Next.js's redirect() works by throwing a special tagged error that its
+  // own internals catch further up the tree — a blanket try/catch here
+  // would swallow that and show an error screen instead of redirecting.
+  // So every redirect() call below stays outside any try block; only the
+  // Supabase/DB calls that can genuinely fail unexpectedly are wrapped,
+  // each one individually, so a failure anywhere in this layout shows a
+  // real message instead of Next.js's generic "server-side exception"
+  // digest page (that page is what every login attempt hit before this).
+  let supabase: Awaited<ReturnType<typeof createClient>>
+  let user: Awaited<ReturnType<Awaited<ReturnType<typeof createClient>>['auth']['getUser']>>['data']['user']
+  try {
+    supabase = await createClient()
+    const result = await supabase.auth.getUser()
+    user = result.data.user
+  } catch (err) {
+    console.error('Failed to load the authenticated user:', err)
+    return <ErrorScreen title="We couldn't load your session" body="Please try signing in again." detail={getErrorMessage(err)} />
+  }
 
   if (!user) redirect('/login')
 
-  let business = await getBusinessForUser(supabase, user.id)
+  let business: Awaited<ReturnType<typeof getBusinessForUser>> = null
+  try {
+    business = await getBusinessForUser(supabase, user.id)
+  } catch (err) {
+    console.error('Failed to look up the business for this user:', err)
+    return <ErrorScreen title="We couldn't load your clinic" body="Please try signing in again, or contact support if this keeps happening." detail={getErrorMessage(err)} />
+  }
+
   // Signup can't create the clinic itself when Supabase requires email
   // confirmation (no session exists yet at signup time — RLS needs
   // auth.uid()) — it stashes clinic_name/full_name in the auth user's
@@ -45,28 +81,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         contactEmail: user.email ?? null,
       })
     } catch (err) {
-      // This used to throw unhandled here, which crashes the whole layout
-      // with Next.js's generic "server-side exception" digest page and no
-      // way to recover — every login attempt for an account without a
-      // business hit this same wall. Surface something the user can act on
-      // instead.
       console.error('Failed to auto-create business on first login:', err)
-      return (
-        <div className="grid min-h-screen place-items-center bg-[var(--page-bg)] px-4 text-center">
-          <div className="max-w-md space-y-3">
-            <h1 className="font-display text-2xl font-bold text-[var(--text-strong)]">We couldn&apos;t set up your clinic</h1>
-            <p className="text-sm text-[var(--text-muted)]">
-              Something went wrong creating your clinic account. Please try signing in again, or contact support if this keeps happening.
-            </p>
-            <p className="text-xs text-[var(--text-muted)]">
-              {getErrorMessage(err)}
-            </p>
-            <a href="/login" className="btn-primary inline-flex">
-              Back to sign in
-            </a>
-          </div>
-        </div>
-      )
+      return <ErrorScreen title="We couldn't set up your clinic" body="Something went wrong creating your clinic account. Please try signing in again, or contact support if this keeps happening." detail={getErrorMessage(err)} />
     }
   }
 
