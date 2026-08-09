@@ -331,6 +331,9 @@ export interface DashboardAnalytics {
   unreadNotifications: number
   activeAgents: number
   activeServices: number
+  totalConversations: number
+  bookedConversations: number
+  callbacksRequested: number
 }
 
 export interface PortalContext {

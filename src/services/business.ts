@@ -504,7 +504,7 @@ export async function getDashboardAnalytics(supabase: DbClient, businessId: stri
   startOfWeek.setHours(0, 0, 0, 0)
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const [appointmentsToday, upcomingAppointments, totalPatients, cancelledAppointments, completedAppointments, noShowAppointments, unreadNotifications, activeAgents, activeServices] = await Promise.all([
+  const [appointmentsToday, upcomingAppointments, totalPatients, cancelledAppointments, completedAppointments, noShowAppointments, unreadNotifications, activeAgents, activeServices, totalConversations, bookedConversations, callbacksRequested] = await Promise.all([
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('business_id', businessId).gte('scheduled_at', startOfDay.toISOString()).lt('scheduled_at', new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000).toISOString()),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('business_id', businessId).gte('scheduled_at', now.toISOString()).neq('status', 'cancelled'),
     supabase.from('patients').select('id', { count: 'exact', head: true }).eq('business_id', businessId),
@@ -514,6 +514,9 @@ export async function getDashboardAnalytics(supabase: DbClient, businessId: stri
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('business_id', businessId).is('read_at', null),
     supabase.from('ai_agents').select('id', { count: 'exact', head: true }).eq('business_id', businessId).eq('status', 'live'),
     supabase.from('clinic_services').select('id', { count: 'exact', head: true }).eq('business_id', businessId).eq('active', true),
+    supabase.from('conversations').select('id', { count: 'exact', head: true }).eq('business_id', businessId),
+    supabase.from('conversations').select('id', { count: 'exact', head: true }).eq('business_id', businessId).eq('outcome', 'booked_appointment'),
+    supabase.from('conversations').select('id', { count: 'exact', head: true }).eq('business_id', businessId).eq('outcome', 'escalated'),
   ])
 
   return {
@@ -526,6 +529,9 @@ export async function getDashboardAnalytics(supabase: DbClient, businessId: stri
     unreadNotifications: unreadNotifications.count ?? 0,
     activeAgents: activeAgents.count ?? 0,
     activeServices: activeServices.count ?? 0,
+    totalConversations: totalConversations.count ?? 0,
+    bookedConversations: bookedConversations.count ?? 0,
+    callbacksRequested: callbacksRequested.count ?? 0,
   }
 }
 
