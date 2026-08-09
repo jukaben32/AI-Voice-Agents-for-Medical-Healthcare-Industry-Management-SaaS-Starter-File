@@ -76,6 +76,8 @@ export interface AiAgent {
   sensitivity: number
   greetingMessage: string
   systemPrompt: string
+  assignedServiceIds?: string[]
+  templateKey?: string | null
   status: AgentStatus
   language: string
   callsHandled: number
