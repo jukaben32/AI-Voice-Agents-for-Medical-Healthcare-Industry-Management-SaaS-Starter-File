@@ -171,28 +171,47 @@ export async function createBusiness(
     timezone?: string | null
   }
 ) {
-  const slug = slugify(input.slug || input.name)
-  const { data, error } = await supabase
-    .from('businesses')
-    .insert({
-      owner_id: input.ownerId,
-      name: input.name,
-      slug,
-      specialty: input.specialty ?? null,
-      description: input.description ?? null,
-      contact_email: input.contactEmail ?? null,
-      phone: input.phone ?? null,
-      timezone: input.timezone || DEFAULT_TIME_ZONE,
-      booking_deposit_amount: 49,
-      payment_currency: DEFAULT_CURRENCY,
-      payment_chain_id: 137,
-      onboarding_step: 'profile',
-    })
-    .select('*')
-    .single()
+  const baseSlug = slugify(input.slug || input.name)
+  // businesses.slug is unique — a base slug alone collides whenever two
+  // signups produce the same name (the same clinic name tried more than
+  // once, two different clinics with a common name, etc.), and that
+  // collision used to bubble up as an unhandled Postgres error that crashed
+  // the whole dashboard layout on the very next login. Retry with a short
+  // random suffix instead of failing outright.
+  let business: Business | null = null
+  let lastError: unknown = null
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const slug = attempt === 0 ? baseSlug : `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+    const { data, error } = await supabase
+      .from('businesses')
+      .insert({
+        owner_id: input.ownerId,
+        name: input.name,
+        slug,
+        specialty: input.specialty ?? null,
+        description: input.description ?? null,
+        contact_email: input.contactEmail ?? null,
+        phone: input.phone ?? null,
+        timezone: input.timezone || DEFAULT_TIME_ZONE,
+        booking_deposit_amount: 49,
+        payment_currency: DEFAULT_CURRENCY,
+        payment_chain_id: 137,
+        onboarding_step: 'profile',
+      })
+      .select('*')
+      .single()
 
-  if (error) throw error
-  const business = toBusiness(data)
+    if (!error) {
+      business = toBusiness(data)
+      break
+    }
+    lastError = error
+    // 23505 = unique_violation. Only the slug collision is worth retrying;
+    // any other error (bad owner_id, RLS, connection issue) should surface
+    // immediately instead of retrying blindly.
+    if ((error as { code?: string }).code !== '23505') throw error
+  }
+  if (!business) throw lastError
 
   const defaultAgentName = `${toTitleCase(input.name)} Assistant`
   const defaultPrompt = `You are Clara, the AI medical receptionist for ${input.name}. Help patients book appointments, answer FAQs, and follow the clinic scheduling rules. Be concise, empathetic, and safe.`
@@ -295,7 +314,7 @@ export async function createBusiness(
       business_id: business.id,
       agent_id: agentId ?? null,
       name: 'Primary Widget',
-      slug,
+      slug: business.slug,
       enabled: true,
       position: 'bottom-right',
       theme: 'light',
@@ -310,7 +329,7 @@ export async function createBusiness(
     supabase.from('websites').insert({
       business_id: business.id,
       agent_id: agentId ?? null,
-      slug,
+      slug: business.slug,
       template: 'serenity',
       published: false,
       primary_color: DEFAULT_PRIMARY_COLOR,

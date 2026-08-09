@@ -24,11 +24,36 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (!business) {
     const clinicName = (user.user_metadata?.clinic_name as string | undefined)?.trim()
     if (!clinicName) redirect('/signup')
-    business = await createBusiness(supabase, {
-      ownerId: user.id,
-      name: clinicName,
-      contactEmail: user.email ?? null,
-    })
+    try {
+      business = await createBusiness(supabase, {
+        ownerId: user.id,
+        name: clinicName,
+        contactEmail: user.email ?? null,
+      })
+    } catch (err) {
+      // This used to throw unhandled here, which crashes the whole layout
+      // with Next.js's generic "server-side exception" digest page and no
+      // way to recover — every login attempt for an account without a
+      // business hit this same wall. Surface something the user can act on
+      // instead.
+      console.error('Failed to auto-create business on first login:', err)
+      return (
+        <div className="grid min-h-screen place-items-center bg-[var(--page-bg)] px-4 text-center">
+          <div className="max-w-md space-y-3">
+            <h1 className="font-display text-2xl font-bold text-[var(--text-strong)]">We couldn&apos;t set up your clinic</h1>
+            <p className="text-sm text-[var(--text-muted)]">
+              Something went wrong creating your clinic account. Please try signing in again, or contact support if this keeps happening.
+            </p>
+            <p className="text-xs text-[var(--text-muted)]">
+              {err instanceof Error ? err.message : 'Unknown error'}
+            </p>
+            <a href="/login" className="btn-primary inline-flex">
+              Back to sign in
+            </a>
+          </div>
+        </div>
+      )
+    }
   }
 
   return (
