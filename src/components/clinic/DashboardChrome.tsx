@@ -6,9 +6,11 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import {
   Bell,
+  Bot,
   CalendarDays,
   CalendarRange,
   FileText,
+  Globe2,
   LayoutDashboard,
   LifeBuoy,
   LogOut,
@@ -18,12 +20,9 @@ import {
   Settings2,
   Sparkles,
   Stethoscope,
-  Users,
-  Wallet,
-  Bot,
-  LineChart,
-  Globe2,
   User,
+  Users,
+  LineChart,
 } from 'lucide-react'
 
 import { BrandMark } from '@/components/clinic/shared'
@@ -41,41 +40,36 @@ type NavGroup = {
   items: readonly NavItem[]
 }
 
-// Grouped to mirror the "Industry" dashboard reference (Principal /
-// Herramientas / Cuenta / Plataforma). Only routes that already exist with
-// real pages are linked here — Calendar, Knowledge base, WhatsApp, Profile,
-// and Platform admin from the reference have no page/table yet, so they're
-// deliberately left out rather than added as dead links or empty mockups.
+// The sidebar now mirrors the reference video more closely:
+// CLINICAL / SETUP / ACCOUNT, with the closest existing routes mapped in.
 const navGroups: readonly NavGroup[] = [
   {
-    label: 'Principal',
+    label: 'CLINICAL',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/dashboard/appointments/schedule', label: 'Calendar', icon: CalendarRange },
+      { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+      { href: '/dashboard/analytics', label: 'Analytics', icon: LineChart },
+      { href: '/dashboard/conversations', label: 'Call Log', icon: MessageCircle },
       { href: '/dashboard/appointments', label: 'Appointments', icon: CalendarDays },
+      { href: '/dashboard/appointments/schedule', label: 'Schedule', icon: CalendarRange },
       { href: '/dashboard/patients', label: 'Patients', icon: Users },
-      { href: '/dashboard/services', label: 'Services', icon: Stethoscope },
+      { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
     ],
   },
   {
-    label: 'Herramientas',
+    label: 'SETUP',
     items: [
       { href: '/dashboard/agents', label: 'AI Agents', icon: Bot },
+      { href: '/dashboard/services', label: 'Services', icon: Stethoscope },
+      { href: '/dashboard/faqs', label: 'Knowledge', icon: FileText },
       { href: '/dashboard/widget', label: 'Widget', icon: Sparkles },
       { href: '/dashboard/website', label: 'Website', icon: Globe2 },
-      { href: '/dashboard/analytics', label: 'Analytics', icon: LineChart },
-      { href: '/dashboard/conversations', label: 'Conversations', icon: MessageCircle },
-      { href: '/dashboard/faqs', label: 'Knowledge', icon: FileText },
     ],
   },
   {
-    label: 'Cuenta',
+    label: 'ACCOUNT',
     items: [
-      { href: '/dashboard/billing', label: 'Billing', icon: Wallet },
       { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-      { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
       { href: '/dashboard/settings', label: 'Settings', icon: Settings2 },
-      { href: '/dashboard/profile', label: 'My Profile', icon: User },
     ],
   },
 ]
@@ -85,8 +79,7 @@ function isActive(pathname: string, href: string) {
 }
 
 // Longest matching href wins so a parent route (e.g. /dashboard/appointments)
-// doesn't also light up when a more specific child route has its own nav
-// entry (e.g. /dashboard/appointments/schedule for Calendar).
+// doesn't also light up when a more specific child route has its own nav entry.
 function bestMatch(pathname: string, items: readonly NavItem[]) {
   return items
     .filter((item) => isActive(pathname, item.href))
@@ -117,21 +110,36 @@ export function DashboardChrome({
   return (
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_12%_18%,rgba(19,122,114,0.12),transparent_22%),radial-gradient(circle_at_86%_10%,rgba(236,170,93,0.14),transparent_18%),var(--page-bg)] p-3 text-[var(--text-strong)] lg:p-4">
       <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1760px] overflow-hidden rounded-[34px] border border-white/60 bg-[rgba(255,253,248,0.84)] shadow-[0_30px_100px_-60px_rgba(15,33,41,0.55)] backdrop-blur-xl lg:min-h-[calc(100vh-2rem)]">
-        <aside className="hidden lg:flex lg:w-[288px] lg:flex-col">
+        <aside className="hidden lg:flex lg:w-[272px] lg:flex-col">
           <div className="sticky top-0 flex min-h-full flex-col text-white" style={{ background: 'linear-gradient(180deg, #10222a 0%, #132b34 56%, #0f2129 100%)' }}>
-            <div className="border-b border-white/10 p-5">
-              <BrandMark />
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-soft)]" />
-                Always on
+            <div className="border-b border-white/10 p-4">
+              <div className="rounded-[18px] border border-white/10 bg-white/6 p-3.5 backdrop-blur-sm">
+                <BrandMark compact />
+                <div className="mt-2 text-[11px] leading-5 text-white/60">
+                  AI voice platform for clinics
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-[18px] border border-white/10 bg-white/6 p-3 backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-white">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-white">{businessName}</div>
+                    <div className="truncate text-[11px] text-white/60">{ownerEmail}</div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex-1 space-y-5 overflow-y-auto p-3.5">
+            <div className="flex-1 space-y-5 overflow-y-auto px-3.5 py-4">
               {navGroups.map((group) => (
                 <div key={group.label}>
-                  <div className="px-2 pb-2 font-display text-[10px] font-semibold uppercase tracking-[0.24em] text-white/42">{group.label}</div>
-                  <div className="space-y-0.5">
+                  <div className="px-2 pb-2 font-display text-[10px] font-semibold uppercase tracking-[0.28em] text-white/40">
+                    {group.label}
+                  </div>
+                  <div className="space-y-1">
                     {group.items.map((item) => {
                       const Icon = item.icon
                       const active = item.href === activeItem.href
@@ -140,10 +148,7 @@ export function DashboardChrome({
                         <Link
                           key={item.href}
                           href={item.href}
-                          className={cn(
-                            'sidebar-link',
-                            active ? 'sidebar-link-active' : 'text-white/68 hover:text-white',
-                          )}
+                          className={cn('sidebar-link', active ? 'sidebar-link-active' : 'text-white/68 hover:text-white')}
                         >
                           <Icon className="h-4 w-4 shrink-0" />
                           <span>{item.label}</span>
@@ -158,8 +163,10 @@ export function DashboardChrome({
             <div className="space-y-2.5 border-t border-white/10 p-3.5">
               <div className="plate-corners relative rounded-[24px] border border-white/10 bg-white/6 p-3.5 backdrop-blur-sm">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full animate-pulse-slow" style={{ background: 'var(--brand-soft)' }} />
-                  <span className="font-display text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--brand-soft)' }}>AI active</span>
+                  <span className="h-1.5 w-1.5 animate-pulse-slow rounded-full" style={{ background: 'var(--brand-soft)' }} />
+                  <span className="font-display text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--brand-soft)' }}>
+                    AI active
+                  </span>
                 </div>
                 <p className="mt-2 text-xs leading-6 text-white/72">
                   24/7 smart booking assistant active across widget, portal, and phone workflows.
@@ -204,7 +211,10 @@ export function DashboardChrome({
               <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full" style={{ background: 'var(--brand)' }} />
             </button>
             <div className="hidden items-center gap-2.5 rounded-full border border-[var(--border-soft)] bg-white/82 py-1.5 pl-1.5 pr-4 sm:flex">
-              <div className="grid h-8 w-8 place-items-center rounded-full text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-strong))' }}>
+              <div
+                className="grid h-8 w-8 place-items-center rounded-full text-sm font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-strong))' }}
+              >
                 {businessName.charAt(0).toUpperCase() || '?'}
               </div>
               <div className="leading-tight">
@@ -214,9 +224,7 @@ export function DashboardChrome({
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 px-4 py-6 pb-10 lg:px-6 lg:py-7">
-            {children}
-          </main>
+          <main className="min-w-0 flex-1 px-4 py-6 pb-10 lg:px-6 lg:py-7">{children}</main>
         </div>
       </div>
     </div>
