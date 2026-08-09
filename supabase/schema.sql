@@ -611,6 +611,171 @@ drop policy if exists "website subscribers by business members" on website_subsc
 create policy "website subscribers by business members"
   on website_subscribers for all using (has_business_access(business_id));
 
+-- 13a. WEBSITE CONTENT TABLES
+create table if not exists website_services (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  icon text not null default 'home',
+  name text not null,
+  description text,
+  duration text,
+  price text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_website_services_business_id on website_services (business_id);
+create index if not exists idx_website_services_sort_order on website_services (business_id, sort_order);
+
+drop trigger if exists update_website_services_updated_at on website_services;
+create trigger update_website_services_updated_at
+before update on website_services
+for each row execute function update_updated_at_column();
+
+alter table website_services enable row level security;
+
+drop policy if exists "website services access by business members" on website_services;
+create policy "website services access by business members"
+  on website_services for all using (has_business_access(business_id));
+drop policy if exists "public can read published website services" on website_services;
+create policy "public can read published website services"
+  on website_services for select using (
+    exists (
+      select 1
+      from websites w
+      where w.business_id = business_id
+        and w.published = true
+    )
+  );
+
+create table if not exists website_team_members (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  name text not null,
+  role text not null,
+  bio text,
+  photo_url text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_website_team_members_business_id on website_team_members (business_id);
+create index if not exists idx_website_team_members_sort_order on website_team_members (business_id, sort_order);
+
+drop trigger if exists update_website_team_members_updated_at on website_team_members;
+create trigger update_website_team_members_updated_at
+before update on website_team_members
+for each row execute function update_updated_at_column();
+
+alter table website_team_members enable row level security;
+
+drop policy if exists "website team members access by business members" on website_team_members;
+create policy "website team members access by business members"
+  on website_team_members for all using (has_business_access(business_id));
+drop policy if exists "public can read published website team members" on website_team_members;
+create policy "public can read published website team members"
+  on website_team_members for select using (
+    exists (
+      select 1
+      from websites w
+      where w.business_id = business_id
+        and w.published = true
+    )
+  );
+
+create table if not exists website_testimonials (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  quote text not null,
+  author_name text not null,
+  author_role text,
+  rating integer not null default 5 check (rating between 1 and 5),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_website_testimonials_business_id on website_testimonials (business_id);
+create index if not exists idx_website_testimonials_sort_order on website_testimonials (business_id, sort_order);
+
+drop trigger if exists update_website_testimonials_updated_at on website_testimonials;
+create trigger update_website_testimonials_updated_at
+before update on website_testimonials
+for each row execute function update_updated_at_column();
+
+alter table website_testimonials enable row level security;
+
+drop policy if exists "website testimonials access by business members" on website_testimonials;
+create policy "website testimonials access by business members"
+  on website_testimonials for all using (has_business_access(business_id));
+drop policy if exists "public can read published website testimonials" on website_testimonials;
+create policy "public can read published website testimonials"
+  on website_testimonials for select using (
+    exists (
+      select 1
+      from websites w
+      where w.business_id = business_id
+        and w.published = true
+    )
+  );
+
+create table if not exists website_specialties (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  label text not null,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_website_specialties_business_id on website_specialties (business_id);
+create index if not exists idx_website_specialties_sort_order on website_specialties (business_id, sort_order);
+
+alter table website_specialties enable row level security;
+
+drop policy if exists "website specialties access by business members" on website_specialties;
+create policy "website specialties access by business members"
+  on website_specialties for all using (has_business_access(business_id));
+drop policy if exists "public can read published website specialties" on website_specialties;
+create policy "public can read published website specialties"
+  on website_specialties for select using (
+    exists (
+      select 1
+      from websites w
+      where w.business_id = business_id
+        and w.published = true
+    )
+  );
+
+create table if not exists website_faqs (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  question text not null,
+  answer text not null,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_website_faqs_business_id on website_faqs (business_id);
+create index if not exists idx_website_faqs_sort_order on website_faqs (business_id, sort_order);
+
+alter table website_faqs enable row level security;
+
+drop policy if exists "website faqs access by business members" on website_faqs;
+create policy "website faqs access by business members"
+  on website_faqs for all using (has_business_access(business_id));
+drop policy if exists "public can read published website faqs" on website_faqs;
+create policy "public can read published website faqs"
+  on website_faqs for select using (
+    exists (
+      select 1
+      from websites w
+      where w.business_id = business_id
+        and w.published = true
+    )
+  );
+
 -- 14. SUPPORT
 create table if not exists support_tickets (
   id uuid primary key default gen_random_uuid(),

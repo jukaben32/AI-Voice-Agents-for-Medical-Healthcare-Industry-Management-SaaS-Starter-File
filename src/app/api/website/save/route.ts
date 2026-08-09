@@ -1,7 +1,7 @@
 import { apiError, json, readJson } from '@/lib/api'
 import { getBusinessForCurrentUser, getBusinessMembershipRole, getServerSupabaseAndUser, canManageBusiness } from '@/lib/route-helpers'
-import { createOrUpdateWebsite } from '@/services/websites'
-import { websiteSchema } from '@/validations'
+import { createOrUpdateWebsite, getWebsiteContentForBusiness, saveWebsiteContent } from '@/services/websites'
+import { saveWebsiteContentSchema, websiteSchema } from '@/validations'
 
 export async function POST(request: Request) {
   const { supabase, user } = await getServerSupabaseAndUser()
@@ -26,44 +26,63 @@ export async function POST(request: Request) {
     return apiError('Invalid JSON body', 400)
   }
 
-  const parsed = websiteSchema.safeParse(body)
-  if (!parsed.success) {
-    return apiError('Invalid website payload', 422, { issues: parsed.error.flatten() })
+  try {
+    if (body && typeof body === 'object' && 'website' in body) {
+      const parsed = saveWebsiteContentSchema.safeParse(body)
+      if (!parsed.success) {
+        return apiError('Invalid website payload', 422, { issues: parsed.error.flatten() })
+      }
+
+      const content = await saveWebsiteContent(supabase, business.id, parsed.data)
+      return json(content)
+    }
+
+    const parsed = websiteSchema.safeParse(body)
+    if (!parsed.success) {
+      return apiError('Invalid website payload', 422, { issues: parsed.error.flatten() })
+    }
+
+    await createOrUpdateWebsite(supabase, business.id, {
+      slug: parsed.data.slug,
+      agentId: parsed.data.agentId ?? null,
+      template: parsed.data.template,
+      published: parsed.data.published,
+      primaryColor: parsed.data.primaryColor,
+      secondaryColor: parsed.data.secondaryColor,
+      font: parsed.data.font,
+      siteTitle: parsed.data.siteTitle,
+      siteDescription: parsed.data.siteDescription,
+      heroHeadline: parsed.data.heroHeadline ?? null,
+      heroSubheadline: parsed.data.heroSubheadline ?? null,
+      heroImageUrl: parsed.data.heroImageUrl ?? null,
+      ctaPrimaryText: parsed.data.ctaPrimaryText,
+      ctaSecondaryText: parsed.data.ctaSecondaryText,
+      aboutTitle: parsed.data.aboutTitle,
+      aboutStory: parsed.data.aboutStory ?? null,
+      aboutPhotoUrl: parsed.data.aboutPhotoUrl ?? null,
+      footerTagline: parsed.data.footerTagline ?? null,
+      footerCopyright: parsed.data.footerCopyright ?? null,
+      contactPhone: parsed.data.contactPhone ?? null,
+      contactEmail: parsed.data.contactEmail ?? null,
+      contactAddress: parsed.data.contactAddress ?? null,
+      contactHours: parsed.data.contactHours ?? null,
+      contactMapsUrl: parsed.data.contactMapsUrl ?? null,
+      yearsExperience: parsed.data.yearsExperience ?? null,
+      patientsServed: parsed.data.patientsServed ?? null,
+      satisfactionPct: parsed.data.satisfactionPct ?? null,
+      trustBadges: parsed.data.trustBadges ?? [],
+      featuredServiceIds: parsed.data.featuredServiceIds ?? [],
+    })
+
+    const content = await getWebsiteContentForBusiness(supabase, business.id)
+    return json(content)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo guardar'
+    if (message.toLowerCase().includes('slug')) {
+      return apiError(message, 409)
+    }
+    return apiError(message, 500)
   }
-
-  const website = await createOrUpdateWebsite(supabase, business.id, {
-    slug: parsed.data.slug,
-    agentId: parsed.data.agentId ?? null,
-    template: parsed.data.template,
-    published: parsed.data.published,
-    primaryColor: parsed.data.primaryColor,
-    secondaryColor: parsed.data.secondaryColor,
-    font: parsed.data.font,
-    siteTitle: parsed.data.siteTitle,
-    siteDescription: parsed.data.siteDescription,
-    heroHeadline: parsed.data.heroHeadline ?? null,
-    heroSubheadline: parsed.data.heroSubheadline ?? null,
-    heroImageUrl: parsed.data.heroImageUrl ?? null,
-    ctaPrimaryText: parsed.data.ctaPrimaryText,
-    ctaSecondaryText: parsed.data.ctaSecondaryText,
-    aboutTitle: parsed.data.aboutTitle,
-    aboutStory: parsed.data.aboutStory ?? null,
-    aboutPhotoUrl: parsed.data.aboutPhotoUrl ?? null,
-    footerTagline: parsed.data.footerTagline ?? null,
-    footerCopyright: parsed.data.footerCopyright ?? null,
-    contactPhone: parsed.data.contactPhone ?? null,
-    contactEmail: parsed.data.contactEmail ?? null,
-    contactAddress: parsed.data.contactAddress ?? null,
-    contactHours: parsed.data.contactHours ?? null,
-    contactMapsUrl: parsed.data.contactMapsUrl ?? null,
-    yearsExperience: parsed.data.yearsExperience ?? null,
-    patientsServed: parsed.data.patientsServed ?? null,
-    satisfactionPct: parsed.data.satisfactionPct ?? null,
-    trustBadges: parsed.data.trustBadges ?? [],
-    featuredServiceIds: parsed.data.featuredServiceIds ?? [],
-  })
-
-  return json({ website })
 }
 
 export async function PATCH(request: Request) {

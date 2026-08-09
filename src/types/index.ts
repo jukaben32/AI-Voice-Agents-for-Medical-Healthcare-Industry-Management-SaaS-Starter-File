@@ -271,6 +271,69 @@ export interface Website {
   updatedAt: string
 }
 
+export interface WebsiteService {
+  id: string
+  businessId: string
+  icon: string
+  name: string
+  description: string | null
+  duration: string | null
+  price: string | null
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WebsiteTeamMember {
+  id: string
+  businessId: string
+  name: string
+  role: string
+  bio: string | null
+  photoUrl: string | null
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WebsiteTestimonial {
+  id: string
+  businessId: string
+  quote: string
+  authorName: string
+  authorRole: string | null
+  rating: number
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WebsiteSpecialty {
+  id: string
+  businessId: string
+  label: string
+  sortOrder: number
+  createdAt: string
+}
+
+export interface WebsiteFaq {
+  id: string
+  businessId: string
+  question: string
+  answer: string
+  sortOrder: number
+  createdAt: string
+}
+
+export interface WebsiteContent {
+  website: Website
+  services: WebsiteService[]
+  teamMembers: WebsiteTeamMember[]
+  testimonials: WebsiteTestimonial[]
+  specialties: WebsiteSpecialty[]
+  faqs: WebsiteFaq[]
+}
+
 export interface WebsiteSubscriber {
   id: string
   businessId: string

@@ -169,6 +169,64 @@ export const websiteSchema = z.object({
   featuredServiceIds: z.array(z.string().uuid()).optional(),
 })
 
+export const websiteServiceSchema = z.object({
+  id: z.string().uuid().optional(),
+  icon: z.string().default('home'),
+  name: z.string().default(''),
+  description: z.string().optional().nullable(),
+  duration: z.string().optional().nullable(),
+  price: z.string().optional().nullable(),
+  sortOrder: z.coerce.number().int().default(0),
+})
+
+export const websiteTeamMemberSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().default(''),
+  role: z.string().default(''),
+  bio: z.string().optional().nullable(),
+  photoUrl: z.string().optional().nullable(),
+  sortOrder: z.coerce.number().int().default(0),
+})
+
+export const websiteTestimonialSchema = z.object({
+  id: z.string().uuid().optional(),
+  quote: z.string().default(''),
+  authorName: z.string().default(''),
+  authorRole: z.string().optional().nullable(),
+  rating: z.coerce.number().int().min(1).max(5).default(5),
+  sortOrder: z.coerce.number().int().default(0),
+})
+
+export const websiteSpecialtySchema = z.object({
+  id: z.string().uuid().optional(),
+  label: z.string().default(''),
+  sortOrder: z.coerce.number().int().default(0),
+})
+
+export const websiteFaqSchema = z.object({
+  id: z.string().uuid().optional(),
+  question: z.string().default(''),
+  answer: z.string().default(''),
+  sortOrder: z.coerce.number().int().default(0),
+})
+
+export const saveWebsiteContentSchema = z.object({
+  website: websiteSchema,
+  services: z.array(websiteServiceSchema).default([]),
+  teamMembers: z.array(websiteTeamMemberSchema).default([]),
+  testimonials: z.array(websiteTestimonialSchema).default([]),
+  specialties: z.array(websiteSpecialtySchema).default([]),
+  faqs: z.array(websiteFaqSchema).default([]),
+})
+
+export const websiteSiteUrlSchema = z.object({
+  slug: z
+    .string()
+    .min(3, 'Use at least 3 characters')
+    .max(60)
+    .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
+})
+
 export const supportTicketSchema = z.object({
   patientId: z.string().uuid().optional().nullable(),
   appointmentId: z.string().uuid().optional().nullable(),
@@ -235,6 +293,13 @@ export type PortalCheckEmailInput = z.infer<typeof portalCheckEmailSchema>
 export type PortalRecordPaymentInput = z.infer<typeof portalRecordPaymentSchema>
 export type WidgetInput = z.infer<typeof widgetSchema>
 export type WebsiteInput = z.infer<typeof websiteSchema>
+export type WebsiteServiceInput = z.infer<typeof websiteServiceSchema>
+export type WebsiteTeamMemberInput = z.infer<typeof websiteTeamMemberSchema>
+export type WebsiteTestimonialInput = z.infer<typeof websiteTestimonialSchema>
+export type WebsiteSpecialtyInput = z.infer<typeof websiteSpecialtySchema>
+export type WebsiteFaqInput = z.infer<typeof websiteFaqSchema>
+export type SaveWebsiteContentInput = z.infer<typeof saveWebsiteContentSchema>
+export type WebsiteSiteUrlInput = z.infer<typeof websiteSiteUrlSchema>
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>
 export type SupportMessageInput = z.infer<typeof supportMessageSchema>
 export type KnowledgeDocumentInput = z.infer<typeof knowledgeDocumentSchema>
