@@ -57,27 +57,56 @@ export function DashboardOverviewManager({
 }) {
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 border border-[var(--border-soft)] bg-[var(--panel)] px-6 py-5 shadow-[2px_2px_0_0_var(--border-soft)] md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Live dashboard</div>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--text-strong)]">
-            {greeting}, {businessName}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            {todayLabel}, the clinic has {stats.appointmentsToday} appointment{stats.appointmentsToday === 1 ? '' : 's'} today and {stats.upcomingAppointments} upcoming.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <ButtonLink href="/dashboard/appointments" icon="none">
-            View all appointments
-          </ButtonLink>
-          <ButtonLink href="/dashboard/widget" variant="secondary" icon="none">
-            Widget settings
-          </ButtonLink>
-        </div>
-      </div>
+      <SurfaceCard className="relative overflow-hidden p-6 md:p-7">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,122,114,0.14),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(236,170,93,0.12),transparent_28%)]" />
+        <div className="relative grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/70 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-strong)] backdrop-blur-sm">
+              Live dashboard
+            </div>
+            <h1 className="mt-4 font-display text-4xl font-semibold tracking-[-0.05em] text-[var(--text-strong)] md:text-5xl">
+              {greeting}, {businessName}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--text-muted)] md:text-base">
+              {todayLabel}. The clinic has {stats.appointmentsToday} appointment{stats.appointmentsToday === 1 ? '' : 's'} today and {stats.upcomingAppointments} upcoming.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <ButtonLink href="/dashboard/appointments" icon="none">
+                View all appointments
+              </ButtonLink>
+              <ButtonLink href="/dashboard/widget" variant="secondary" icon="none">
+                Widget settings
+              </ButtonLink>
+            </div>
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="rounded-[24px] border border-[var(--border-soft)] bg-white/72 p-4 backdrop-blur-sm">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Today</div>
+              <div className="mt-2 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
+                {stats.appointmentsToday}
+              </div>
+              <div className="mt-1 text-sm text-[var(--text-muted)]">Appointments on the schedule</div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--border-soft)] bg-white/72 p-4 backdrop-blur-sm">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Up next</div>
+              <div className="mt-2 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
+                {stats.upcomingAppointments}
+              </div>
+              <div className="mt-1 text-sm text-[var(--text-muted)]">Booked and confirmed</div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(135deg,rgba(19,122,114,0.12),rgba(255,255,255,0.76))] p-4 backdrop-blur-sm">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Momentum</div>
+              <div className="mt-2 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
+                +{newPatientsThisWeek}
+              </div>
+              <div className="mt-1 text-sm text-[var(--text-muted)]">New patients this week</div>
+            </div>
+          </div>
+        </div>
+      </SurfaceCard>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard label="Today" value={String(stats.appointmentsToday)} delta="Scheduled today" icon={CalendarDays} tone="teal" />
         <MetricCard label="Upcoming" value={String(stats.upcomingAppointments)} delta="Booked & confirmed" icon={Clock3} tone="blue" />
         <MetricCard label="Patients" value={String(stats.totalPatients)} delta={`+${newPatientsThisWeek} this week`} icon={Users} tone="emerald" />
@@ -90,8 +119,8 @@ export function DashboardOverviewManager({
         <SurfaceCard className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Today&apos;s schedule</div>
-              <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">Bookings confirmed today</h2>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">Today&apos;s schedule</div>
+              <h2 className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">Bookings confirmed today</h2>
             </div>
             <StatusBadge tone="teal">{todayAppointments.length} appointment{todayAppointments.length === 1 ? '' : 's'}</StatusBadge>
           </div>
@@ -159,15 +188,15 @@ export function DashboardOverviewManager({
         <SurfaceCard className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">AI assistant</div>
-              <h3 className="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">AI assistant</div>
+              <h3 className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
                 {liveAgent ? `${liveAgent.name} is online and ready` : 'No live agent configured'}
               </h3>
             </div>
             <StatusBadge tone={liveAgent ? 'emerald' : 'slate'}>{liveAgent ? 'Realtime' : 'Offline'}</StatusBadge>
           </div>
           <div className="mt-5 space-y-4">
-            <div className="border border-[var(--border-soft)] px-5 py-4 text-white" style={{ background: 'var(--surface-dark)' }}>
+            <div className="rounded-[24px] border border-[var(--border-soft)] px-5 py-4 text-white" style={{ background: 'linear-gradient(135deg, var(--surface-dark), #16323c)' }}>
               <div className="text-sm font-bold">Welcome message</div>
               <p className="mt-2 text-sm leading-7 text-white/74">
                 {liveAgent?.greetingMessage ?? 'Set up an AI agent in AI Agents to greet patients automatically.'}
@@ -183,8 +212,8 @@ export function DashboardOverviewManager({
         <SurfaceCard className="p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Operational snapshot</div>
-              <h3 className="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">What&apos;s happening in the clinic</h3>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">Operational snapshot</div>
+              <h3 className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">What&apos;s happening in the clinic</h3>
             </div>
             <ButtonLink href="/dashboard/analytics" variant="secondary" icon="arrow">
               Open analytics

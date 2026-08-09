@@ -8,14 +8,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // "Industry" design system: steel-blue monochrome, Barlow fonts, and a
-      // flat/square scale (border-radius 0, hairline shadows instead of
-      // blur). Same scale keys as before, only the values changed, so no
-      // component needs to change which class it uses (rounded-2xl,
-      // shadow-card, font-display, etc. all still resolve, just differently).
+      // Warm clinical system: softer surfaces, Sora typography, and a
+      // slightly more rounded scale. The existing class names still resolve,
+      // so the redesign can be applied mostly through shared components and
+      // tokens instead of a full-page rewrite.
       fontFamily: {
-        sans: ["Barlow", "system-ui", "sans-serif"],
-        display: ["Barlow Condensed", "Barlow", "system-ui", "sans-serif"],
+        sans: ["Sora", "system-ui", "sans-serif"],
+        display: ["Sora", "system-ui", "sans-serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       colors: {
         brand: {

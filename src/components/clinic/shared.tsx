@@ -67,19 +67,23 @@ export function BrandMark({
     <div className="flex items-center gap-3">
       <div
         className={cn(
-          'grid place-items-center rounded-none text-white',
-          compact ? 'h-8 w-8' : 'h-9 w-9',
+          'relative grid shrink-0 place-items-center overflow-hidden text-white',
+          compact ? 'h-9 w-9 rounded-[14px]' : 'h-10 w-10 rounded-[16px]',
         )}
-        style={{ background: 'var(--brand)' }}
+        style={{
+          background: 'linear-gradient(135deg, var(--brand), var(--brand-strong))',
+          boxShadow: '0 18px 36px -24px rgba(19, 122, 114, 0.7)',
+        }}
       >
-        <Sparkles className={compact ? 'h-4 w-4' : 'h-4 w-4'} />
+        <span className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.36),transparent_55%)]" />
+        <Sparkles className="relative h-4 w-4" />
       </div>
       {!compact ? (
         <div className="leading-tight">
-          <div className="font-display text-base font-bold tracking-tight text-[var(--text-strong)]">
+          <div className="font-display text-[15px] font-semibold tracking-[-0.03em] text-[var(--text-strong)]">
             Clara AI
           </div>
-          <div className="text-[11px] font-medium text-[var(--text-muted)]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
             clinical reception stack
           </div>
         </div>
@@ -90,7 +94,7 @@ export function BrandMark({
 
 export function SectionEyebrow({ children }: { children: ReactNode }) {
   return (
-    <div className="inline-flex items-center gap-2 border border-[var(--brand)] px-3 py-1.5 font-display text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-strong)]">
+    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/75 px-3.5 py-1.5 font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-strong)] backdrop-blur-sm">
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--brand)] animate-pulse-slow" />
       {children}
     </div>
@@ -109,12 +113,12 @@ export function SectionHeading({
   description?: ReactNode
   align?: 'left' | 'center'
   actions?: ReactNode
-}) {
+  }) {
   return (
     <div className={cn('flex flex-col gap-4', align === 'center' && 'items-center text-center')}>
       {eyebrow ? <div>{eyebrow}</div> : null}
       <div className={cn('max-w-3xl', align === 'center' && 'mx-auto')}>
-        <h2 className="font-display text-3xl font-bold tracking-tight text-[var(--text-strong)] md:text-4xl">
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)] md:text-4xl">
           {title}
         </h2>
       </div>
@@ -136,14 +140,19 @@ export function SurfaceCard({
   children: ReactNode
   className?: string
   glow?: boolean
-}) {
+  }) {
   return (
     <div
       className={cn(
-        'rounded-none border border-[var(--border-soft)] bg-[var(--panel)] shadow-[2px_2px_0_0_var(--border-soft)]',
-        glow && 'border-[var(--brand)] shadow-[2px_2px_0_0_var(--brand)]',
+        'rounded-[28px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(246,239,230,0.9))]',
+        glow && 'border-[var(--border-strong)]',
         className,
       )}
+      style={{
+        boxShadow: glow
+          ? '0 24px 72px -44px rgba(19, 122, 114, 0.42)'
+          : '0 18px 60px -42px rgba(15, 33, 41, 0.34)',
+      }}
     >
       {children}
     </div>
@@ -165,18 +174,19 @@ export function MetricCard({
 }) {
   const toneClasses = toneMap[tone]
   return (
-    <SurfaceCard className="p-5">
+    <SurfaceCard className="relative overflow-hidden p-5">
+      <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: 'linear-gradient(90deg, var(--brand), rgba(19, 122, 114, 0.28))' }} />
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">
             {label}
           </div>
-          <div className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--text-strong)]">
+          <div className="mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
             {value}
           </div>
           {delta ? <div className="mt-2 text-sm font-medium text-[var(--brand-strong)]">{delta}</div> : null}
         </div>
-        <div className={cn('rounded-none border p-3', toneClasses.badge)}>
+        <div className={cn('grid h-12 w-12 place-items-center rounded-[16px] border p-3', toneClasses.badge)}>
           <Icon className="h-5 w-5" />
         </div>
       </div>
@@ -192,11 +202,11 @@ export function StatusBadge({
   children: ReactNode
   tone?: Tone
   className?: string
-}) {
+  }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-none border px-2.5 py-1 text-[11px] font-semibold leading-none',
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-none',
         toneMap[tone].badge,
         className,
       )}
@@ -222,8 +232,8 @@ export function ButtonLink({
     variant === 'primary'
       ? 'text-white'
       : variant === 'secondary'
-        ? 'border border-[var(--text-strong)] bg-transparent text-[var(--text-strong)] hover:bg-[var(--panel-soft)]'
-        : 'bg-transparent text-[var(--text-strong)] hover:bg-[var(--panel-soft)]'
+        ? 'border border-[var(--border-soft)] bg-white/72 text-[var(--text-strong)] backdrop-blur-sm hover:bg-white/92'
+        : 'bg-transparent text-[var(--text-strong)] hover:bg-white/55'
 
   const Icon = icon === 'calendar' ? CalendarDays : icon === 'check' ? CheckCircle2 : ArrowUpRight
 
@@ -231,10 +241,17 @@ export function ButtonLink({
     <Link
       href={href}
       className={cn(
-        'inline-flex items-center gap-2 rounded-none px-5 py-3 font-display text-sm font-semibold uppercase tracking-[0.06em] transition duration-150',
+        'inline-flex items-center gap-2 rounded-full px-5 py-3 font-display text-sm font-semibold tracking-[0.02em] transition duration-200 hover:-translate-y-0.5',
         styles,
       )}
-      style={variant === 'primary' ? { background: 'var(--brand)' } : undefined}
+      style={
+        variant === 'primary'
+          ? {
+              background: 'linear-gradient(135deg, var(--brand), var(--brand-strong))',
+              boxShadow: '0 18px 40px -24px rgba(19, 122, 114, 0.65)',
+            }
+          : undefined
+      }
     >
       {children}
       {icon !== 'none' ? <Icon className="h-4 w-4" /> : null}
@@ -250,11 +267,11 @@ export function Pill({
   children: ReactNode
   tone?: Tone
   className?: string
-}) {
+  }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-none border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em]',
+        'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]',
         toneMap[tone].badge,
         className,
       )}
@@ -273,27 +290,27 @@ export function BrowserFrame({
   subtitle?: string
   accent?: Tone
   children: ReactNode
-}) {
+  }) {
   return (
-    <div className="overflow-hidden rounded-none border border-[var(--border-soft)] bg-[var(--panel)] shadow-[3px_3px_0_0_var(--border-soft)]">
-      <div className="flex items-center justify-between border-b border-[var(--border-soft)] px-4 py-3 text-white" style={{ background: 'var(--text-strong)' }}>
+    <div className="overflow-hidden rounded-[32px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(246,239,230,0.92))] shadow-[0_26px_80px_-52px_rgba(15,33,41,0.45)]">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white" style={{ background: 'linear-gradient(135deg, #102129 0%, #17313a 100%)' }}>
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
           <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
           <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
         </div>
-        <div className="rounded-none bg-white/10 px-3 py-1 text-[11px] font-medium text-white/80">
+        <div className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-white/80">
           {title}
         </div>
         <div className="w-16" />
       </div>
-      <div className="bg-[var(--panel-soft)] p-4">
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-none border border-[var(--border-soft)] bg-[var(--panel)] px-4 py-3">
+      <div className="bg-[rgba(255,255,255,0.62)] p-4 backdrop-blur-sm">
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-[24px] border border-[var(--border-soft)] bg-white/78 px-4 py-3 backdrop-blur-sm">
           <div>
-            <div className="text-sm font-bold text-[var(--text-strong)]">{title}</div>
+            <div className="text-sm font-semibold text-[var(--text-strong)]">{title}</div>
             {subtitle ? <div className="text-xs text-[var(--text-muted)]">{subtitle}</div> : null}
           </div>
-          <div className="h-2 w-16 rounded-none" style={{ background: 'var(--brand)' }} />
+          <div className="h-2 w-16 rounded-full" style={{ background: 'linear-gradient(90deg, var(--brand), var(--brand-strong))' }} />
         </div>
         {children}
       </div>
@@ -310,11 +327,11 @@ export function PhoneFrame({
   subtitle?: string
   accent?: Tone
   children: ReactNode
-}) {
+  }) {
   return (
-    <div className="w-full max-w-[340px] rounded-none border border-[var(--border-soft)] bg-[var(--panel)] p-3 shadow-[3px_3px_0_0_var(--border-soft)]">
-      <div className="overflow-hidden rounded-none bg-[var(--panel)]">
-        <div className="px-4 py-3 text-white" style={{ background: 'var(--brand)' }}>
+    <div className="w-full max-w-[340px] rounded-[36px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,240,231,0.92))] p-3 shadow-[0_26px_80px_-52px_rgba(15,33,41,0.45)]">
+      <div className="overflow-hidden rounded-[28px] bg-[var(--panel)]">
+        <div className="px-4 py-3 text-white" style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-strong))' }}>
           <div className="text-xs font-semibold uppercase tracking-[0.24em] opacity-85">{title}</div>
           {subtitle ? <div className="text-[11px] opacity-90">{subtitle}</div> : null}
         </div>
@@ -368,8 +385,8 @@ export function ProgressRail({
         <span className="font-medium text-[var(--text-strong)]">{label}</span>
         <span className="font-bold text-[var(--text-muted)]">{value}%</span>
       </div>
-      <div className="h-2 rounded-none bg-[var(--panel-soft)]">
-        <div className="h-full rounded-none" style={{ width: `${value}%`, background: 'var(--brand)' }} />
+      <div className="h-2 rounded-full bg-[rgba(16,33,41,0.08)]">
+        <div className="h-full rounded-full" style={{ width: `${value}%`, background: 'linear-gradient(90deg, var(--brand), var(--brand-strong))' }} />
       </div>
     </div>
   )
@@ -392,9 +409,9 @@ export function TimelineList({
           <div className="mt-1 w-16 shrink-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">
             {item.time}
           </div>
-          <div className={cn('relative flex-1 rounded-none border border-[var(--border-soft)] bg-[var(--panel)] px-4 py-3', item.tone && toneMap[item.tone].glow)}>
+          <div className={cn('relative flex-1 rounded-[22px] border border-[var(--border-soft)] bg-white/80 px-4 py-3 backdrop-blur-sm', item.tone && toneMap[item.tone].glow)}>
             <div className="flex items-center justify-between gap-4">
-              <div className="font-bold text-[var(--text-strong)]">{item.title}</div>
+              <div className="font-semibold text-[var(--text-strong)]">{item.title}</div>
               <Clock3 className="h-4 w-4 text-[var(--text-muted)]" />
             </div>
             {item.description ? <div className="mt-1 text-sm text-[var(--text-muted)]">{item.description}</div> : null}
@@ -411,11 +428,11 @@ export function SimpleTable({
 }: {
   columns: string[]
   rows: ReactNode[][]
-}) {
+  }) {
   return (
-    <div className="overflow-hidden rounded-none border border-[var(--border-soft)] bg-[var(--panel)]">
+    <div className="overflow-hidden rounded-[24px] border border-[var(--border-soft)] bg-white/82 backdrop-blur-sm">
       <div
-        className="grid gap-3 border-b border-[var(--border-soft)] bg-[var(--panel-soft)] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--text-muted)]"
+        className="grid gap-3 border-b border-[var(--border-soft)] bg-[rgba(16,33,41,0.04)] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]"
         style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
       >
         {columns.map((column) => (
@@ -453,11 +470,12 @@ export function FeatureCard({
   title: string
   body: string
   tone?: Tone
-}) {
+  }) {
   return (
-    <SurfaceCard className="p-6">
+    <SurfaceCard className="relative overflow-hidden p-6">
+      <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--brand),rgba(19,122,114,0.18))]" />
       <Icon className="h-6 w-6" style={{ color: 'var(--brand)' }} />
-      <h3 className="mt-4 font-display text-lg font-semibold tracking-tight text-[var(--text-strong)]">{title}</h3>
+      <h3 className="mt-4 font-display text-lg font-semibold tracking-[-0.03em] text-[var(--text-strong)]">{title}</h3>
       <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">{body}</p>
     </SurfaceCard>
   )
@@ -481,7 +499,7 @@ export function QuoteCard({
       </div>
       <p className="text-sm leading-7 text-[var(--text-strong)]">&ldquo;{quote}&rdquo;</p>
       <div className="mt-5 flex items-center gap-3">
-        <div className="grid h-9 w-9 place-items-center rounded-full text-sm font-bold text-white" style={{ background: 'var(--brand)' }}>
+        <div className="grid h-9 w-9 place-items-center rounded-full text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-strong))' }}>
           {author
             .split(' ')
             .map((part) => part[0])
@@ -509,13 +527,13 @@ export function ValueCard({
   subtitle?: string
   icon: LucideIcon
   tone?: Tone
-}) {
+  }) {
   return (
     <SurfaceCard className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">{label}</div>
-          <div className="mt-2 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">{value}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">{label}</div>
+          <div className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">{value}</div>
           {subtitle ? <div className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</div> : null}
         </div>
         <Icon className="h-5 w-5 shrink-0" style={{ color: 'var(--brand)' }} />
@@ -536,9 +554,9 @@ export function PriceBlock({
   helper?: string
 }) {
   return (
-    <div className="rounded-none border border-[var(--border-soft)] bg-[var(--panel)] p-5">
+    <div className="rounded-[24px] border border-[var(--border-soft)] bg-white/82 p-5 backdrop-blur-sm">
       <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{label}</div>
-      <div className="mt-2 font-display text-3xl font-bold tracking-tight text-[var(--text-strong)]">
+      <div className="mt-2 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
         {formatCurrency(amount, currency)}
       </div>
       {helper ? <div className="mt-2 text-sm text-[var(--text-muted)]">{helper}</div> : null}

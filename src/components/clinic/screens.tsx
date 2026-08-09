@@ -211,14 +211,14 @@ const marketingFaqs = [
 function heroPreview() {
   return (
     <div className="relative">
-      <div className="plate-corners relative border border-[var(--border-soft)] bg-[var(--panel)] shadow-[3px_3px_0_0_var(--border-soft)]">
+      <div className="plate-corners relative rounded-[34px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(246,239,230,0.9))] shadow-[0_28px_90px_-56px_rgba(15,33,41,0.48)]">
         <BrowserFrame title="Clinic dashboard" subtitle="Live bookings, schedules, and patient operations">
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <SurfaceCard className="p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">Live dashboard</div>
-                  <div className="mt-1 text-lg font-bold text-[var(--text-strong)]">Good evening, Dr. Harrington</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">Live dashboard</div>
+                  <div className="mt-1 font-display text-xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">Good evening, Dr. Harrington</div>
                 </div>
                 <StatusBadge tone="teal">Online</StatusBadge>
               </div>
@@ -229,14 +229,14 @@ function heroPreview() {
             </SurfaceCard>
             <SurfaceCard className="p-5">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-bold text-[var(--text-strong)]">Upcoming appointments</div>
+                <div className="text-sm font-semibold text-[var(--text-strong)]">Upcoming appointments</div>
                 <ArrowLink href="/dashboard/appointments">See all</ArrowLink>
               </div>
               <div className="mt-4 space-y-3">
                 {upcomingAppointments.slice(0, 4).map((item) => (
-                  <div key={item.name} className="flex items-center justify-between gap-3 border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
+                  <div key={item.name} className="flex items-center justify-between gap-3 rounded-[20px] border border-[var(--border-soft)] bg-white/76 px-4 py-3">
                     <div>
-                      <div className="text-sm font-bold text-[var(--text-strong)]">{item.name}</div>
+                      <div className="text-sm font-semibold text-[var(--text-strong)]">{item.name}</div>
                       <div className="text-xs text-[var(--text-muted)]">{item.note}</div>
                     </div>
                     <StatusBadge tone={item.tone}>Booked</StatusBadge>
@@ -247,9 +247,9 @@ function heroPreview() {
           </div>
         </BrowserFrame>
       </div>
-      <div className="absolute -bottom-6 -left-6 hidden w-[210px] border border-[var(--border-soft)] bg-[var(--panel)] p-4 shadow-[3px_3px_0_0_var(--border-soft)] sm:block">
-        <div className="font-display text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--brand)' }}>Live</div>
-        <div className="mt-1 font-display text-2xl font-bold tracking-tight text-[var(--text-strong)]">12,400+</div>
+      <div className="absolute -bottom-6 -left-6 hidden w-[220px] rounded-[24px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(236,248,245,0.96))] p-4 shadow-[0_24px_70px_-48px_rgba(15,33,41,0.45)] sm:block">
+        <div className="font-display text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'var(--brand)' }}>Live</div>
+        <div className="mt-1 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">12,400+</div>
         <div className="text-xs text-[var(--text-muted)]">patients managed this month</div>
       </div>
     </div>
@@ -258,8 +258,8 @@ function heroPreview() {
 
 export function MarketingHomeScreen() {
   return (
-    <div className="bg-[var(--page-bg)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-[var(--page-bg)]/90 backdrop-blur">
+    <div className="relative overflow-hidden bg-[var(--page-bg)]">
+      <header className="sticky top-0 z-40 border-b border-[var(--border-soft)] bg-[rgba(255,253,248,0.82)] backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center gap-8 px-6 py-4 lg:px-8">
           <div className="mr-auto">
             <BrandMark compact />
@@ -283,11 +283,16 @@ export function MarketingHomeScreen() {
       </header>
 
       <main>
-        <section id="producto" className="mx-auto grid w-full max-w-7xl items-center gap-14 px-6 py-20 lg:grid-cols-[1.02fr_0.98fr] lg:px-8">
-          <div className="max-w-xl">
+        <section id="producto" className="relative mx-auto mt-6 grid w-full max-w-7xl items-center gap-14 overflow-hidden rounded-[36px] border border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(247,240,231,0.92))] px-6 py-16 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:py-20">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,122,114,0.11),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(236,170,93,0.12),transparent_26%)]" />
+          <div className="relative max-w-xl">
             <SectionEyebrow>AI medical receptionist</SectionEyebrow>
-            <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-[var(--text-strong)] sm:text-6xl">
-              Every clinic, an AI agent that never drops the call.
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white/72 px-3.5 py-1.5 text-[11px] font-semibold text-[var(--text-strong)] backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
+              Voice, calendar, portal, and billing in one flow
+            </div>
+            <h1 className="mt-6 max-w-[12ch] font-display text-5xl font-semibold leading-[0.98] tracking-[-0.06em] text-[var(--text-strong)] sm:text-6xl">
+              Every clinic gets an AI front desk that never misses the call.
             </h1>
             <p className="mt-6 max-w-lg text-lg leading-8 text-[var(--text-muted)]">
               Clara AI centralizes appointments, patients, billing, and a voice agent in one dashboard —
@@ -323,18 +328,19 @@ export function MarketingHomeScreen() {
           {heroPreview()}
         </section>
 
-        <section style={{ background: 'var(--surface-dark)' }}>
-          <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-y-8 px-6 py-14 lg:grid-cols-4 lg:px-8">
+        <section className="mx-auto w-full max-w-7xl px-6 pt-6 lg:px-8">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              { value: '67%', label: 'appointment completion rate' },
-              { value: '-33%', label: 'no-shows after AI reminders' },
-              { value: '13', label: 'average active patients per clinic' },
-              { value: '6 min', label: 'average time to activate a service' },
-            ].map((stat, index) => (
-              <div key={stat.label} className={cn('px-6', index > 0 && 'border-l border-white/18')}>
-                <div className="font-display text-4xl font-bold text-white">{stat.value}</div>
-                <div className="mt-1.5 text-[13px] text-white/62">{stat.label}</div>
-              </div>
+              { value: '67%', label: 'appointment completion rate', detail: 'The booking flow is guided end to end.' },
+              { value: '-33%', label: 'no-shows after AI reminders', detail: 'Follow-ups happen before the visit slips.' },
+              { value: '13', label: 'average active patients per clinic', detail: 'Enough volume to feel the impact quickly.' },
+              { value: '6 min', label: 'average time to activate a service', detail: 'Fast setup for new clinics and service lines.' },
+            ].map((stat) => (
+              <SurfaceCard key={stat.label} className="p-5">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">{stat.label}</div>
+                <div className="mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">{stat.value}</div>
+                <div className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">{stat.detail}</div>
+              </SurfaceCard>
             ))}
           </div>
         </section>
@@ -349,54 +355,87 @@ export function MarketingHomeScreen() {
               Six connected modules: what the voice agent books shows up instantly in the calendar, patient records, and billing.
             </p>
           </div>
-          <div className="mt-10 grid gap-px border border-[var(--border-soft)] bg-[var(--border-soft)] sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {features.map((feature) => (
-              <div key={feature.title} className="bg-[var(--page-bg)] p-7">
-                <feature.icon className="h-6 w-6" style={{ color: 'var(--brand)' }} />
-                <h3 className="mt-4 font-display text-lg font-semibold tracking-tight text-[var(--text-strong)]">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-[var(--text-muted)]">{feature.body}</p>
-              </div>
+              <FeatureCard key={feature.title} icon={feature.icon} title={feature.title} body={feature.body} tone={feature.tone} />
             ))}
           </div>
         </section>
 
         <section id="workflow" className="mx-auto w-full max-w-7xl px-6 pb-24 lg:px-8">
           <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="plate-corners relative aspect-[4/5] border border-[var(--border-soft)] bg-[var(--brand-soft)]">
-              <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-                <ShieldCheck className="h-9 w-9" style={{ color: 'var(--brand-strong)' }} />
-                <div className="font-display text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--brand-strong)' }}>
-                  HIPAA-ready workflows
+            <div className="relative">
+              <SurfaceCard className="relative overflow-hidden p-6">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,122,114,0.14),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(236,170,93,0.12),transparent_24%)]" />
+                <div className="relative flex min-h-[540px] flex-col gap-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">Workflow snapshot</div>
+                      <div className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
+                        Calls turn into bookings without friction
+                      </div>
+                    </div>
+                    <StatusBadge tone="teal">24/7</StatusBadge>
+                  </div>
+                  <PhoneFrame title="Clara AI" subtitle="Patient intake live">
+                    <div className="space-y-3">
+                      <div className="rounded-[20px] bg-[var(--brand-soft)] px-4 py-3 text-sm leading-6 text-[var(--brand-strong)]">
+                        Hello, I can help you schedule a visit, check availability, or route you to the right person.
+                      </div>
+                      <div className="grid gap-2">
+                        {['Choose a service', 'Reserve a time', 'Confirm the visit'].map((item, index) => (
+                          <div key={item} className="rounded-[18px] border border-[var(--border-soft)] bg-white/82 px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="grid h-8 w-8 place-items-center rounded-full bg-[var(--brand-soft)] text-[11px] font-semibold text-[var(--brand-strong)]">
+                                0{index + 1}
+                              </div>
+                              <div className="text-sm font-semibold text-[var(--text-strong)]">{item}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PhoneFrame>
+                  <div className="rounded-[24px] border border-[var(--border-soft)] bg-white/74 p-4 backdrop-blur-sm">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Live routing</div>
+                        <div className="mt-1 font-display text-xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">
+                          1.2k calls handled this month
+                        </div>
+                      </div>
+                      <ShieldCheck className="h-5 w-5 text-[var(--brand)]" />
+                    </div>
+                    <div className="ecg-line mt-4 h-10 rounded-[18px] border border-[var(--border-soft)] bg-[linear-gradient(90deg,rgba(19,122,114,0.05),rgba(19,122,114,0.16),rgba(19,122,114,0.05))]" />
+                  </div>
                 </div>
-              </div>
+              </SurfaceCard>
             </div>
             <div>
               <SectionEyebrow>Why Clara AI</SectionEyebrow>
-              <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-[var(--text-strong)] sm:text-4xl">
-                Built for clinics that can&rsquo;t afford to miss a call
+              <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-[-0.05em] text-[var(--text-strong)] sm:text-4xl">
+                Built for clinics that cannot afford to miss a call
               </h2>
-              <div className="mt-7 flex flex-col gap-5">
+              <div className="mt-7 flex flex-col gap-4">
                 {workflow.map((item) => (
-                  <div key={item.title} className="flex gap-4">
-                    <item.icon className="mt-0.5 h-5 w-5 shrink-0" style={{ color: 'var(--brand)' }} />
-                    <div>
-                      <div className="text-[15px] font-semibold text-[var(--text-strong)]">{item.step}. {item.title}</div>
-                      <div className="mt-1 text-sm leading-6 text-[var(--text-muted)]">{item.body}</div>
+                  <div key={item.title} className="rounded-[24px] border border-[var(--border-soft)] bg-white/78 p-5 shadow-[0_16px_40px_-36px_rgba(15,33,41,0.45)] backdrop-blur-sm">
+                    <div className="flex gap-4">
+                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[16px] bg-[var(--brand-soft)] text-[var(--brand-strong)]">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--text-muted)]">{item.step}</div>
+                        <div className="mt-1 font-display text-xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">{item.title}</div>
+                        <div className="mt-2 text-sm leading-7 text-[var(--text-muted)]">{item.body}</div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="mt-8 grid grid-cols-3 gap-px border border-[var(--border-soft)] bg-[var(--border-soft)]">
-                {[
-                  { icon: ShieldCheck, label: 'HIPAA-ready encryption' },
-                  { icon: Clock3, label: '99.9% uptime' },
-                  { icon: Users, label: 'Dedicated support' },
-                ].map((item) => (
-                  <div key={item.label} className="bg-[var(--page-bg)] p-4 text-center">
-                    <item.icon className="mx-auto h-5 w-5" style={{ color: 'var(--brand)' }} />
-                    <div className="mt-2 font-display text-[13px] font-semibold text-[var(--text-strong)]">{item.label}</div>
-                  </div>
-                ))}
+              <div className="mt-8 flex flex-wrap gap-2">
+                <Pill tone="teal">HIPAA-ready encryption</Pill>
+                <Pill tone="slate">99.9% uptime</Pill>
+                <Pill tone="slate">Dedicated support</Pill>
               </div>
             </div>
           </div>
@@ -516,30 +555,47 @@ export function MarketingHomeScreen() {
           </div>
         </section>
 
-        <section style={{ background: 'var(--surface-dark)' }}>
-          <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-24 text-white lg:grid-cols-2 lg:px-8">
-            <div>
-              <SectionEyebrow>Launch ready</SectionEyebrow>
-              <h2 className="mt-5 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-                Ready to transform your practice?
-              </h2>
-              <p className="mt-4 max-w-md text-sm leading-7 text-white/70">
-                Bring the widget, portal, dashboard, and AI receptionist online in one system, configured with your real services.
-              </p>
-              <div className="mt-7 flex flex-col gap-2.5 text-sm">
-                <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand-soft)' }} />No card required for the trial</div>
-                <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand-soft)' }} />Calendar migration included</div>
-                <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand-soft)' }} />Support in English &amp; Spanish, 24/7</div>
+        <section className="border-t border-[var(--border-soft)] bg-[linear-gradient(180deg,rgba(255,253,248,0.72),rgba(245,239,230,0.98))]">
+          <div className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-8">
+            <SurfaceCard className="relative overflow-hidden px-6 py-8 sm:px-8 sm:py-10">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(19,122,114,0.12),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(236,170,93,0.12),transparent_24%)]" />
+              <div className="relative grid gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+                <div>
+                  <SectionEyebrow>Launch ready</SectionEyebrow>
+                  <h2 className="mt-5 max-w-lg font-display text-4xl font-semibold tracking-[-0.05em] text-[var(--text-strong)] sm:text-5xl">
+                    Ready to bring Clara into your practice?
+                  </h2>
+                  <p className="mt-4 max-w-md text-sm leading-7 text-[var(--text-muted)]">
+                    Bring the widget, portal, dashboard, and AI receptionist online in one system, configured with your real services.
+                  </p>
+                  <div className="mt-7 flex flex-col gap-2.5 text-sm text-[var(--text-strong)]">
+                    <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand)' }} />No card required for the trial</div>
+                    <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand)' }} />Calendar migration included</div>
+                    <div className="flex items-center gap-2.5"><CheckCircle2 className="h-4 w-4" style={{ color: 'var(--brand)' }} />Support in English &amp; Spanish, 24/7</div>
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <SurfaceCard className="p-5">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Deployment</div>
+                    <div className="mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">14 days</div>
+                    <div className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">Typical rollout for a new clinic.</div>
+                  </SurfaceCard>
+                  <SurfaceCard className="p-5">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Support</div>
+                    <div className="mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-[var(--text-strong)]">24/7</div>
+                    <div className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">English and Spanish coverage included.</div>
+                  </SurfaceCard>
+                  <div className="sm:col-span-2 flex flex-wrap gap-3 pt-1">
+                    <ButtonLink href="/signup" icon="calendar">
+                      Start Free Trial
+                    </ButtonLink>
+                    <ButtonLink href="/dashboard" variant="secondary" icon="arrow">
+                      Open Dashboard
+                    </ButtonLink>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="plate-corners relative flex flex-col items-start justify-center gap-4 border border-white/24 p-9">
-              <ButtonLink href="/signup" icon="calendar">
-                Start Free Trial
-              </ButtonLink>
-              <ButtonLink href="/dashboard" variant="secondary" icon="arrow">
-                Open Dashboard
-              </ButtonLink>
-            </div>
+            </SurfaceCard>
           </div>
         </section>
       </main>
