@@ -94,21 +94,36 @@ function toPublicProfile(row: any): PublicBusinessProfile {
 }
 
 export async function getBusinessForOwner(supabase: DbClient, ownerId: string) {
-  const { data, error } = await supabase.from('businesses').select('*').eq('owner_id', ownerId).maybeSingle()
+  const { data, error } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('owner_id', ownerId)
+    .order('created_at', { ascending: false })
+    .limit(1)
   if (error) throw error
-  return data ? toBusiness(data) : null
+  return data?.[0] ? toBusiness(data[0]) : null
 }
 
 export async function getBusinessForUser(supabase: DbClient, userId: string) {
-  const { data: owned, error: ownedError } = await supabase.from('businesses').select('*').eq('owner_id', userId).maybeSingle()
+  const { data: owned, error: ownedError } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('owner_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
   if (ownedError) throw ownedError
-  if (owned) return toBusiness(owned)
+  if (owned?.[0]) return toBusiness(owned[0])
 
-  const { data: membership, error: membershipError } = await supabase.from('business_members').select('business_id').eq('user_id', userId).limit(1).maybeSingle()
+  const { data: membership, error: membershipError } = await supabase
+    .from('business_members')
+    .select('business_id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
   if (membershipError) throw membershipError
-  if (!membership?.business_id) return null
+  if (!membership?.[0]?.business_id) return null
 
-  const { data: business, error: businessError } = await supabase.from('businesses').select('*').eq('id', membership.business_id).maybeSingle()
+  const { data: business, error: businessError } = await supabase.from('businesses').select('*').eq('id', membership[0].business_id).maybeSingle()
   if (businessError) throw businessError
   return business ? toBusiness(business) : null
 }
