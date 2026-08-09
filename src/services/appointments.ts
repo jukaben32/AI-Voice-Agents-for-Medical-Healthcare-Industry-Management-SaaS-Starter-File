@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type {
   Appointment,
   AppointmentSource,
@@ -488,14 +489,18 @@ export async function recordAppointmentPayment(
     amount: number
     currency?: string
     chainId?: number
-    txHash: string
+    txHash?: string
     status?: BillingTransactionStatus
     paymentType?: BillingPaymentType
+    appointmentPaymentStatus?: Appointment['paymentStatus']
     metadata?: Record<string, unknown> | null
   }
 ) {
   const appointment = await getAppointmentById(supabase, businessId, appointmentId)
   if (!appointment) throw new Error('Appointment not found')
+
+  const paymentAmount = appointment.paymentAmount ?? appointment.service?.price ?? input.amount
+  const resolvedTxHash = input.txHash?.trim() || `clinic-${appointmentId}-${randomUUID()}`
 
   const { error: insertError } = await supabase.from('billing_transactions').insert({
     business_id: businessId,
@@ -504,7 +509,7 @@ export async function recordAppointmentPayment(
     amount: input.amount,
     currency: input.currency || DEFAULT_CURRENCY,
     chain_id: input.chainId || DEFAULT_CHAIN_ID,
-    tx_hash: input.txHash,
+    tx_hash: resolvedTxHash,
     status: input.status || 'pending',
     payment_type: input.paymentType || 'booking_deposit',
     metadata: input.metadata ?? null,
@@ -514,11 +519,11 @@ export async function recordAppointmentPayment(
   const { data, error } = await supabase
     .from('appointments')
     .update({
-      payment_status: input.status === 'confirmed' ? 'paid' : 'pending',
-      payment_amount: input.amount,
-      payment_currency: input.currency || DEFAULT_CURRENCY,
+      payment_status: input.appointmentPaymentStatus ?? (input.status === 'confirmed' ? 'paid' : 'pending'),
+      payment_amount: paymentAmount,
+      payment_currency: input.currency || appointment.paymentCurrency || DEFAULT_CURRENCY,
       payment_chain_id: input.chainId || DEFAULT_CHAIN_ID,
-      payment_tx_hash: input.txHash,
+      payment_tx_hash: resolvedTxHash,
     })
     .eq('business_id', businessId)
     .eq('id', appointmentId)

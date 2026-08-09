@@ -16,5 +16,5 @@ export default async function AppointmentsPage() {
 
   const appointments = await listAppointmentsForBusiness(supabase, business.id, { limit: 100 })
 
-  return <AppointmentsManager initialAppointments={appointments} timezone={business.timezone} />
+  return <AppointmentsManager initialAppointments={appointments} timezone={business.timezone} businessName={business.name} />
 }

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { apiError, json, readJson } from '@/lib/api'
 import { getBusinessForCurrentUser, getServerSupabaseAndUser } from '@/lib/route-helpers'
 import { recordAppointmentPayment } from '@/services/appointments'
@@ -27,13 +28,15 @@ export async function POST(request: Request) {
     return apiError('Invalid payment payload', 422, { issues: parsed.error.flatten() })
   }
 
+  const txHash = parsed.data.txHash?.trim() || `clinic-${parsed.data.appointmentId}-${randomUUID()}`
   const appointment = await recordAppointmentPayment(supabase, business.id, parsed.data.appointmentId, {
     amount: parsed.data.amount,
     currency: parsed.data.currency || business.paymentCurrency,
     chainId: parsed.data.chainId || business.paymentChainId || 137,
-    txHash: parsed.data.txHash,
+    txHash,
     status: parsed.data.status,
     paymentType: parsed.data.paymentType,
+    appointmentPaymentStatus: parsed.data.appointmentPaymentStatus,
     metadata: parsed.data.metadata ?? null,
   })
 
@@ -41,7 +44,7 @@ export async function POST(request: Request) {
     category: 'billing',
     title: 'Payment recorded',
     message: `Payment recorded for appointment ${appointment.id}.`,
-    data: { appointmentId: appointment.id, amount: parsed.data.amount, txHash: parsed.data.txHash },
+    data: { appointmentId: appointment.id, amount: parsed.data.amount, txHash },
   })
 
   return json({ appointment })

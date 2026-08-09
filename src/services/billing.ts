@@ -40,6 +40,23 @@ export async function listBillingTransactions(supabase: DbClient, businessId: st
   return (data ?? []).map(toBilling)
 }
 
+export async function listBillingTransactionsForAppointment(
+  supabase: DbClient,
+  businessId: string,
+  appointmentId: string,
+  limit = 50
+) {
+  const { data, error } = await supabase
+    .from('billing_transactions')
+    .select('*')
+    .eq('business_id', businessId)
+    .eq('appointment_id', appointmentId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return (data ?? []).map(toBilling)
+}
+
 export async function recordBillingTransaction(
   supabase: DbClient,
   businessId: string,

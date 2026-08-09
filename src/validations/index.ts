@@ -96,9 +96,10 @@ export const appointmentPaymentSchema = z.object({
   amount: z.number().positive(),
   currency: z.string().min(3).max(10).optional(),
   chainId: z.number().int().positive().optional(),
-  txHash: z.string().min(4),
+  txHash: z.string().min(4).optional(),
   status: z.enum(['pending', 'confirmed', 'failed', 'refunded']).optional(),
   paymentType: z.enum(['booking_deposit', 'full_payment', 'subscription', 'portal_topup']).optional(),
+  appointmentPaymentStatus: z.enum(['not_required', 'pending', 'partial', 'paid', 'cash', 'refunded']).optional(),
   metadata: z.record(z.unknown()).optional().nullable(),
 })
 
