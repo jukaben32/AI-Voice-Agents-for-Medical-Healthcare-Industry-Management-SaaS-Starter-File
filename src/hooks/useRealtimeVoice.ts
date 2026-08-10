@@ -298,7 +298,7 @@ export function useRealtimeVoice() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             businessSlug: opts.businessSlug,
-            widgetSlug: opts.widgetSlug ?? null,
+            widgetSlug: opts.widgetSlug ?? undefined,
             language: opts.language ?? 'en',
             sdp: offer.sdp,
           }),
