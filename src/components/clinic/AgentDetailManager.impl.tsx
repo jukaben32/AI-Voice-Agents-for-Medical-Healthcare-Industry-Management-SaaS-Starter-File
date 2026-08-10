@@ -8,6 +8,7 @@ import {
   Loader2,
   Mic,
   PhoneCall,
+  PhoneOff,
   Sparkles,
   Stethoscope,
 } from 'lucide-react'
@@ -18,6 +19,7 @@ import type { AiAgent, ClinicService } from '@/types'
 import { deleteAgent, updateAgent } from '@/services/agents'
 import { createAppointment } from '@/services/appointments'
 import { findOrCreatePatient } from '@/services/patients'
+import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
@@ -105,25 +107,8 @@ function getServiceNames(agent: AiAgent, services: ClinicService[]) {
     .map((service) => service.name)
 }
 
-function buildTranscript(agent: AiAgent) {
-  return [
-    {
-      role: 'AI',
-      content: agent.greetingMessage,
-    },
-    {
-      role: 'Caller',
-      content: `Hi, I would like to book an appointment with ${agent.name}.`,
-    },
-    {
-      role: 'AI',
-      content: `Of course. I can help with ${agent.specialty ?? 'your clinic service'} and gather the details needed to complete the booking.`,
-    },
-  ]
-}
-
 function ConversationBubble({ role, content }: { role: string; content: string }) {
-  const isAgent = role === 'AI'
+  const isAgent = role === 'agent'
   return (
     <div className={cn('flex gap-3', isAgent ? 'justify-start' : 'justify-end')}>
       {isAgent ? (
@@ -141,15 +126,18 @@ function ConversationBubble({ role, content }: { role: string; content: string }
 export function AgentDetailManager({
   agent,
   businessId,
+  businessSlug,
   services,
   initialMode,
 }: {
   agent: AiAgent
   businessId: string
+  businessSlug: string
   services: ClinicService[]
   initialMode: 'configure' | 'test-live'
 }) {
   const [currentAgent, setCurrentAgent] = useState(agent)
+  const voiceCall = useRealtimeVoice()
   const [mode, setMode] = useState<'configure' | 'test-live'>(initialMode)
   const [testTab, setTestTab] = useState<'voice-call' | 'book-appointment'>('voice-call')
   const [form, setForm] = useState<DetailFormState>(() => createDetailSeed(agent))
@@ -193,7 +181,38 @@ export function AgentDetailManager({
     const haystack = `${service.name} ${service.description ?? ''} ${service.instructions ?? ''}`.toLowerCase()
     return haystack.includes(serviceSearch.toLowerCase().trim())
   })
-  const transcript = buildTranscript(currentAgent)
+
+  async function handleToggleVoiceCall() {
+    if (voiceCall.status === 'connecting' || voiceCall.status === 'connected') {
+      voiceCall.disconnect()
+      return
+    }
+
+    try {
+      await voiceCall.connect({
+        businessSlug,
+        voice: currentAgent.voice,
+        onToolCall: async (toolName, args) => {
+          const response = await fetch('/api/realtime/tools', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ businessSlug, toolName, arguments: args }),
+          })
+          if (!response.ok) {
+            throw new Error(await response.text())
+          }
+          const body = await response.json()
+          return body.result
+        },
+      })
+    } catch (err) {
+      pushToast({
+        title: 'Could not start voice call',
+        message: err instanceof Error ? err.message : 'Check microphone permissions and try again.',
+        tone: 'rose',
+      })
+    }
+  }
 
   async function saveConfiguration() {
     setSaving(true)
@@ -637,12 +656,35 @@ export function AgentDetailManager({
 
                     <button
                       type="button"
-                      className="mx-auto mt-6 grid h-24 w-24 place-items-center rounded-full border border-[rgba(15,118,110,0.22)] bg-[linear-gradient(135deg,var(--brand),var(--brand-strong))] text-white shadow-[0_24px_48px_-32px_rgba(15,118,110,0.7)]"
+                      onClick={() => void handleToggleVoiceCall()}
+                      disabled={voiceCall.status === 'connecting'}
+                      className={cn(
+                        'mx-auto mt-6 grid h-24 w-24 place-items-center rounded-full border text-white shadow-[0_24px_48px_-32px_rgba(15,118,110,0.7)] transition disabled:opacity-70',
+                        voiceCall.status === 'connected' || voiceCall.status === 'connecting'
+                          ? 'border-[rgba(225,29,72,0.28)] bg-[linear-gradient(135deg,#e11d48,#be123c)]'
+                          : 'border-[rgba(15,118,110,0.22)] bg-[linear-gradient(135deg,var(--brand),var(--brand-strong))]'
+                      )}
                     >
-                      <Mic className="h-10 w-10" />
+                      {voiceCall.status === 'connecting' ? (
+                        <Loader2 className="h-10 w-10 animate-spin" />
+                      ) : voiceCall.status === 'connected' ? (
+                        <PhoneOff className="h-10 w-10" />
+                      ) : (
+                        <Mic className="h-10 w-10" />
+                      )}
                     </button>
-                    <div className="mt-4 text-sm font-semibold text-[var(--text-strong)]">Ready to test</div>
-                    <p className="mt-1 text-sm text-[var(--text-muted)]">Click the mic to start a call and stream the transcript live.</p>
+                    <div className="mt-4 text-sm font-semibold text-[var(--text-strong)]">
+                      {voiceCall.status === 'connecting'
+                        ? 'Connecting...'
+                        : voiceCall.status === 'connected'
+                          ? 'Listening - tap to end'
+                          : voiceCall.status === 'error'
+                            ? 'Call failed'
+                            : 'Ready to test'}
+                    </div>
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
+                      {voiceCall.error ? voiceCall.error : 'Click the mic to start a call and stream the transcript live.'}
+                    </p>
                   </div>
 
                   <div className="mt-5 rounded-[22px] border border-[var(--border-soft)] bg-[rgba(15,118,110,0.04)] p-4 text-sm text-[var(--text-muted)]">
@@ -669,9 +711,15 @@ export function AgentDetailManager({
                   </div>
 
                   <div className="mt-4 space-y-3">
-                    {transcript.map((message) => (
-                      <ConversationBubble key={`${message.role}-${message.content}`} role={message.role} content={message.content} />
-                    ))}
+                    {voiceCall.messages.length === 0 ? (
+                      <p className="text-sm text-[var(--text-muted)]">
+                        {voiceCall.status === 'connected' ? 'Listening for the first thing you say...' : 'No conversation yet.'}
+                      </p>
+                    ) : (
+                      voiceCall.messages.map((message) => (
+                        <ConversationBubble key={message.id} role={message.role} content={message.content} />
+                      ))
+                    )}
                   </div>
                 </SurfaceCard>
               </div>

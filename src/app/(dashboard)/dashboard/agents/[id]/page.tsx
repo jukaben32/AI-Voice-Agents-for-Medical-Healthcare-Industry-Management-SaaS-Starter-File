@@ -27,5 +27,13 @@ export default async function AgentDetailPage({
   ])
   if (!agent) notFound()
 
-  return <AgentDetailManager agent={agent} businessId={business.id} services={services} initialMode={searchParams?.mode === 'test-live' ? 'test-live' : 'configure'} />
+  return (
+    <AgentDetailManager
+      agent={agent}
+      businessId={business.id}
+      businessSlug={business.slug}
+      services={services}
+      initialMode={searchParams?.mode === 'test-live' ? 'test-live' : 'configure'}
+    />
+  )
 }

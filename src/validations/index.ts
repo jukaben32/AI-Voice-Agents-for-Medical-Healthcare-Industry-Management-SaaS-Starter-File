@@ -266,6 +266,7 @@ export const realtimeSessionSchema = z.object({
   widgetSlug: slugSchema.optional(),
   mode: z.enum(['voice', 'chat']).optional(),
   language: z.string().max(16).optional(),
+  voice: z.string().max(40).optional(),
 })
 
 export const realtimeToolRequestSchema = z.object({

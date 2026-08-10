@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto'
 import type {
   Appointment,
   AppointmentSource,
@@ -507,7 +506,7 @@ export async function recordAppointmentPayment(
   if (!appointment) throw new Error('Appointment not found')
 
   const paymentAmount = appointment.paymentAmount ?? appointment.service?.price ?? input.amount
-  const resolvedTxHash = input.txHash?.trim() || `clinic-${appointmentId}-${randomUUID()}`
+  const resolvedTxHash = input.txHash?.trim() || `clinic-${appointmentId}-${crypto.randomUUID()}`
 
   const { error: insertError } = await supabase.from('billing_transactions').insert({
     business_id: businessId,
