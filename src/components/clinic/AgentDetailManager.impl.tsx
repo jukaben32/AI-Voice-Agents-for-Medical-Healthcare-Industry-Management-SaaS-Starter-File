@@ -29,6 +29,7 @@ import Toast from '@/components/ui/Toast'
 import { MetricCard, SectionEyebrow, SectionHeading, StatusBadge, SurfaceCard } from '@/components/clinic/shared'
 import {
   DEFAULT_AGENT_PROMPT,
+  LANGUAGE_OPTIONS,
   PERSONALITY_OPTIONS,
   SENSITIVITY_OPTIONS,
   VOICE_OPTIONS,
@@ -51,6 +52,7 @@ type DetailFormState = {
   sensitivity: AgentSensitivityPreset
   greetingMessage: string
   systemPrompt: string
+  language: string
 }
 
 const STATUS_TONE: Record<AiAgent['status'], 'emerald' | 'amber' | 'slate'> = {
@@ -91,6 +93,7 @@ function createDetailSeed(agent: AiAgent): DetailFormState {
     sensitivity: pickSensitivityPreset(agent.sensitivity),
     greetingMessage: agent.greetingMessage,
     systemPrompt: agent.systemPrompt || DEFAULT_AGENT_PROMPT,
+    language: agent.language,
   }
 }
 
@@ -198,6 +201,7 @@ export function AgentDetailManager({
       await voiceCall.connect({
         businessSlug,
         agentId: currentAgent.id,
+        language: currentAgent.language,
         onToolCall: async (toolName, args) => {
           const response = await fetch('/api/realtime/tools', {
             method: 'POST',
@@ -238,7 +242,7 @@ export function AgentDetailManager({
         title: currentAgent.title,
         specialty: currentAgent.specialty,
         status: currentAgent.status,
-        language: currentAgent.language,
+        language: form.language,
         callsHandled: currentAgent.callsHandled,
       })
       setCurrentAgent(saved)
@@ -451,6 +455,21 @@ export function AgentDetailManager({
                   {SENSITIVITY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label} - {option.detail}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <Select
+                  label="Language"
+                  value={form.language}
+                  onChange={(event) => setForm((current) => ({ ...current, language: event.target.value }))}
+                  hint="Also used as the transcription hint for call logs - leaving this on English will garble non-English transcripts."
+                >
+                  {LANGUAGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </Select>

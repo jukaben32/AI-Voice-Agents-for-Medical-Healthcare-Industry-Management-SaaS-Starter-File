@@ -55,6 +55,17 @@ export const VOICE_OPTIONS = [
 
 export const PERSONALITY_OPTIONS = ['Professional', 'Friendly', 'Warm', 'Calm', 'Decisive', 'Empathetic'] as const
 
+// Used both to label the agent and as the language hint sent to Whisper for
+// call transcription - without it, transcripts default toward English no
+// matter what language the caller actually speaks.
+export const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'fr', label: 'French' },
+  { value: 'ht', label: 'Haitian Creole' },
+]
+
 export const SENSITIVITY_OPTIONS: Array<{
   value: AgentSensitivityPreset
   label: string

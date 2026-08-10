@@ -247,6 +247,10 @@ export function buildRealtimeSessionPayload(opts: {
         format: { type: 'audio/pcm', rate: 24000 },
         transcription: {
           model: 'whisper-1',
+          // Without a language hint, Whisper defaults toward English and
+          // produces garbled/half-translated text for other languages -
+          // this is what was happening to Spanish call transcripts.
+          language: opts.language,
         },
         turn_detection: {
           type: 'server_vad',
