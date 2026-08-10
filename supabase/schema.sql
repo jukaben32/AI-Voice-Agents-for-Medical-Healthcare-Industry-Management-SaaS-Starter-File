@@ -619,6 +619,7 @@ create table if not exists websites (
   primary_color text not null default '#0f766e',
   secondary_color text not null default '#0ea5e9',
   font text not null default 'Inter',
+  logo_url text,
   site_title text not null,
   site_description text not null,
   hero_headline text,

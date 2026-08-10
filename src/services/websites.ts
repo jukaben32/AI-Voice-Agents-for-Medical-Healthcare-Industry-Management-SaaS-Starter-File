@@ -23,6 +23,7 @@ function toWebsite(row: any): Website {
     primaryColor: row.primary_color,
     secondaryColor: row.secondary_color,
     font: row.font,
+    logoUrl: row.logo_url ?? null,
     siteTitle: row.site_title,
     siteDescription: row.site_description,
     heroHeadline: row.hero_headline ?? null,
@@ -128,6 +129,7 @@ function buildWebsiteRow(input: WebsiteInput, businessId: string, current?: Webs
     primary_color: input.primaryColor ?? current?.primaryColor ?? '#0f766e',
     secondary_color: input.secondaryColor ?? current?.secondaryColor ?? '#0ea5e9',
     font: input.font ?? current?.font ?? 'Inter',
+    logo_url: input.logoUrl ?? current?.logoUrl ?? null,
     site_title: input.siteTitle,
     site_description: input.siteDescription,
     hero_headline: input.heroHeadline ?? current?.heroHeadline ?? null,
@@ -252,6 +254,7 @@ export async function createOrUpdateWebsite(
     primaryColor?: string
     secondaryColor?: string
     font?: string
+    logoUrl?: string | null
     siteTitle: string
     siteDescription: string
     heroHeadline?: string | null
@@ -286,6 +289,7 @@ export async function createOrUpdateWebsite(
       primaryColor: input.primaryColor ?? current?.primaryColor ?? '#0f766e',
       secondaryColor: input.secondaryColor ?? current?.secondaryColor ?? '#0ea5e9',
       font: input.font ?? current?.font ?? 'Inter',
+      logoUrl: input.logoUrl ?? current?.logoUrl ?? null,
       siteTitle: input.siteTitle,
       siteDescription: input.siteDescription,
       heroHeadline: input.heroHeadline ?? current?.heroHeadline ?? null,
@@ -347,6 +351,7 @@ export async function updateWebsite(supabase: DbClient, businessId: string, webs
     primaryColor: patch.primaryColor ?? current.primaryColor,
     secondaryColor: patch.secondaryColor ?? current.secondaryColor,
     font: patch.font ?? current.font,
+    logoUrl: patch.logoUrl ?? current.logoUrl,
     siteTitle: patch.siteTitle ?? current.siteTitle,
     siteDescription: patch.siteDescription ?? current.siteDescription,
     heroHeadline: patch.heroHeadline ?? current.heroHeadline,

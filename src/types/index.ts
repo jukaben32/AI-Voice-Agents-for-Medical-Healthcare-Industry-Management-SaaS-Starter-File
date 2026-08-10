@@ -245,6 +245,7 @@ export interface Website {
   primaryColor: string
   secondaryColor: string
   font: string
+  logoUrl: string | null
   siteTitle: string
   siteDescription: string
   heroHeadline: string | null

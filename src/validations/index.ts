@@ -145,6 +145,7 @@ export const websiteSchema = z.object({
   primaryColor: z.string().max(40).optional(),
   secondaryColor: z.string().max(40).optional(),
   font: z.string().max(80).optional(),
+  logoUrl: z.string().url().optional().nullable(),
   siteTitle: z.string().min(2).max(120),
   siteDescription: z.string().min(2).max(4000),
   heroHeadline: z.string().max(240).optional().nullable(),

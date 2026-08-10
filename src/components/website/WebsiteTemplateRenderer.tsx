@@ -213,12 +213,16 @@ export function WebsiteTemplateRenderer({
       <header className="sticky top-0 z-20 border-b backdrop-blur-xl" style={{ backgroundColor: `${style.bg}ee`, borderColor: style.border }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <span
-              className="grid h-10 w-10 place-items-center rounded-2xl text-white shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${website.primaryColor}, ${website.secondaryColor})` }}
-            >
-              <HeartPulse className="h-5 w-5" />
-            </span>
+            {website.logoUrl ? (
+              <img src={website.logoUrl} alt={website.siteTitle || businessName} className="h-10 w-10 rounded-2xl object-cover shadow-lg" />
+            ) : (
+              <span
+                className="grid h-10 w-10 place-items-center rounded-2xl text-white shadow-lg"
+                style={{ background: `linear-gradient(135deg, ${website.primaryColor}, ${website.secondaryColor})` }}
+              >
+                <HeartPulse className="h-5 w-5" />
+              </span>
+            )}
             <div>
               <p className="text-sm font-extrabold tracking-[-0.03em]">{website.siteTitle || businessName}</p>
               <p className="text-[11px] uppercase tracking-[0.26em]" style={{ color: style.subtext }}>

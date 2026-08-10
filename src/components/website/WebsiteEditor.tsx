@@ -270,6 +270,7 @@ export function WebsiteEditor({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [logoBusy, setLogoBusy] = useState(false)
   const [heroBusy, setHeroBusy] = useState(false)
   const [aboutBusy, setAboutBusy] = useState(false)
   const [teamPhotoIndex, setTeamPhotoIndex] = useState<number | null>(null)
@@ -333,6 +334,20 @@ export function WebsiteEditor({
       throw new Error(data.error ?? 'No se pudo subir la imagen')
     }
     return data.url as string
+  }
+
+  async function handleLogoUpload(file: File | undefined) {
+    if (!file) return
+    setLogoBusy(true)
+    setError(null)
+    try {
+      const url = await uploadImage(file)
+      patchWebsite({ logoUrl: url ?? null })
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'No se pudo subir la imagen')
+    } finally {
+      setLogoBusy(false)
+    }
   }
 
   async function handleHeroUpload(file: File | undefined) {
@@ -411,6 +426,7 @@ export function WebsiteEditor({
         primaryColor: website.primaryColor,
         secondaryColor: website.secondaryColor,
         font: website.font,
+        logoUrl: textOrNull(website.logoUrl ?? ''),
         siteTitle: website.siteTitle,
         siteDescription: website.siteDescription,
         heroHeadline: textOrNull(website.heroHeadline ?? ''),
@@ -538,10 +554,19 @@ export function WebsiteEditor({
         <div className="space-y-5">
           <SectionCard
             title="Brand and basics"
-            subtitle="Template, colors, domain slug, AI agent, title, and description."
+            subtitle="Logo, template, colors, domain slug, AI agent, title, and description."
             icon={Palette}
           >
             <div className="grid gap-4">
+              <UploadBox
+                label="Logo - 1:1 recommended"
+                url={website.logoUrl}
+                busy={logoBusy}
+                hint="Shown in the site header next to the clinic name."
+                onPick={(file) => void handleLogoUpload(file)}
+                onClear={() => patchWebsite({ logoUrl: null })}
+              />
+
               <div className="grid gap-3 md:grid-cols-3">
                 {TEMPLATE_CHOICES.map((choice) => (
                   <button
