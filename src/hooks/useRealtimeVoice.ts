@@ -26,7 +26,7 @@ export type VoiceWidgetStatus =
 
 export type VoiceSessionPayload = {
   business: { id: string; name: string; slug: string; timezone: string }
-  widget: { id: string; name: string; greetingMessage?: string }
+  widget: { id: string; name: string; slug?: string; greetingMessage?: string }
   session: {
     client_secret: { value: string; expires_at: number }
     id: string
@@ -191,14 +191,15 @@ export function useRealtimeVoice(): VoiceState & VoiceActions {
     const offer = await peerConnection.createOffer()
     await peerConnection.setLocalDescription(offer)
 
-    const sdpResponse = await fetch(`${OPENAI_BASE}?model=${session.session.model}`, {
+    // SDP exchange via server-side proxy (keeps API key secure)
+    const sdpResponse = await fetch('/api/realtime/sdp', {
       method: 'POST',
-      body: offer.sdp,
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/sdp',
-        Accept: 'application/sdp',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessSlug: session.business.slug,
+        widgetSlug: session.widget?.slug,
+        sdp: offer.sdp,
+      }),
     })
 
     if (!sdpResponse.ok) {
@@ -206,7 +207,8 @@ export function useRealtimeVoice(): VoiceState & VoiceActions {
       throw new Error(`WebRTC handshake failed: ${errorText}`)
     }
 
-    const answerSdp = await sdpResponse.text()
+    const sdpResult = await sdpResponse.json()
+    const answerSdp = sdpResult.sdpAnswer
     const answer = new RTCSessionDescription({ type: 'answer', sdp: answerSdp })
     await peerConnection.setRemoteDescription(answer)
   }
