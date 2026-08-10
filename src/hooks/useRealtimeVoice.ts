@@ -15,6 +15,7 @@ export interface RealtimeConnectOptions {
   widgetSlug?: string | null
   voice?: string | null
   language?: string | null
+  agentId?: string | null
   onToolCall?: (toolName: string, args: Record<string, unknown>) => Promise<unknown>
 }
 
@@ -67,14 +68,58 @@ export function useRealtimeVoice() {
   const analyserRef = useRef<AnalyserNode | null>(null)
   const amplitudeFrameRef = useRef<number | null>(null)
   const onToolCallRef = useRef<RealtimeConnectOptions['onToolCall']>(undefined)
+  const businessSlugRef = useRef<string | null>(null)
+  const conversationIdRef = useRef<string | null>(null)
+  const callStartedAtRef = useRef<number | null>(null)
 
   const appendMessage = useCallback((role: RealtimeMessage['role'], content: string) => {
     const trimmed = content.trim()
     if (!trimmed) return
     setMessages((current) => [...current, { id: genId(), role, content: trimmed, createdAt: new Date().toISOString() }])
+
+    const conversationId = conversationIdRef.current
+    const businessSlug = businessSlugRef.current
+    if (!conversationId || !businessSlug) return
+    fetch(`/api/realtime/conversation/${conversationId}/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessSlug, role, content: trimmed }),
+    }).catch(() => {
+      // Best-effort transcript logging - never let this break the live call.
+    })
+  }, [])
+
+  const endConversation = useCallback((patch: { patientId?: string; appointmentId?: string } = {}) => {
+    const conversationId = conversationIdRef.current
+    const businessSlug = businessSlugRef.current
+    if (!conversationId || !businessSlug) return
+    const durationSeconds = callStartedAtRef.current ? Math.round((Date.now() - callStartedAtRef.current) / 1000) : undefined
+    fetch(`/api/realtime/conversation/${conversationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessSlug, durationSeconds, ...patch }),
+    }).catch(() => {
+      // Best-effort - the call is already ending either way.
+    })
+    conversationIdRef.current = null
+    callStartedAtRef.current = null
+  }, [])
+
+  const linkConversation = useCallback((patch: { patientId?: string; appointmentId?: string }) => {
+    const conversationId = conversationIdRef.current
+    const businessSlug = businessSlugRef.current
+    if (!conversationId || !businessSlug || (!patch.patientId && !patch.appointmentId)) return
+    fetch(`/api/realtime/conversation/${conversationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessSlug, ...patch }),
+    }).catch(() => {
+      // Best-effort - don't interrupt the call over a logging failure.
+    })
   }, [])
 
   const cleanup = useCallback(() => {
+    endConversation()
     dcRef.current?.close()
     dcRef.current = null
     pcRef.current?.getSenders().forEach((sender) => sender.track?.stop())
@@ -96,7 +141,7 @@ export function useRealtimeVoice() {
     audioContextRef.current?.close()
     audioContextRef.current = null
     setAmplitude(0)
-  }, [])
+  }, [endConversation])
 
   useEffect(() => cleanup, [cleanup])
 
@@ -167,6 +212,10 @@ export function useRealtimeVoice() {
           void (async () => {
             try {
               const result = onToolCallRef.current ? await onToolCallRef.current(toolName, args) : { ok: true }
+              const typedResult = (result as { patient?: { id?: string }; appointment?: { id?: string } }) ?? {}
+              if (typedResult.patient?.id || typedResult.appointment?.id) {
+                linkConversation({ patientId: typedResult.patient?.id, appointmentId: typedResult.appointment?.id })
+              }
               sendToolResult(callId, (result as Record<string, unknown>) ?? { ok: true })
             } catch (toolError) {
               sendToolResult(callId, { error: toolError instanceof Error ? toolError.message : 'Tool call failed' })
@@ -182,7 +231,7 @@ export function useRealtimeVoice() {
           break
       }
     },
-    [appendMessage, sendToolResult]
+    [appendMessage, sendToolResult, linkConversation]
   )
 
   // Live amplitude readout for the waveform UI, fed from the same mic stream
@@ -216,6 +265,7 @@ export function useRealtimeVoice() {
       setMessages([])
       setTranscript('')
       onToolCallRef.current = opts.onToolCall
+      businessSlugRef.current = opts.businessSlug
       setStatus('connecting')
 
       try {
@@ -234,6 +284,26 @@ export function useRealtimeVoice() {
         }
         const sessionData: VoiceSessionPayload = await sessionResponse.json()
         setSession(sessionData)
+
+        // Best-effort: the call still works even if Call Log persistence fails.
+        try {
+          const conversationResponse = await fetch('/api/realtime/conversation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              businessSlug: opts.businessSlug,
+              widgetSlug: opts.widgetSlug ?? undefined,
+              agentId: opts.agentId ?? undefined,
+            }),
+          })
+          if (conversationResponse.ok) {
+            const { conversationId } = await conversationResponse.json()
+            conversationIdRef.current = conversationId
+            callStartedAtRef.current = Date.now()
+          }
+        } catch {
+          // Not fatal - proceed without Call Log persistence for this call.
+        }
 
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
         micStreamRef.current = micStream

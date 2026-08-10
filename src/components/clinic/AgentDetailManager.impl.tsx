@@ -197,6 +197,7 @@ export function AgentDetailManager({
     try {
       await voiceCall.connect({
         businessSlug,
+        agentId: currentAgent.id,
         onToolCall: async (toolName, args) => {
           const response = await fetch('/api/realtime/tools', {
             method: 'POST',
