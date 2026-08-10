@@ -243,7 +243,8 @@ export function buildRealtimeSessionPayload(opts: {
     output_modalities: ['audio'],
     audio: {
       input: {
-        format: 'pcm16',
+        // Format is an object, not a bare string - {"type":"audio/pcm","rate":24000}
+        format: { type: 'audio/pcm', rate: 24000 },
         transcription: {
           model: 'whisper-1',
         },
@@ -255,7 +256,7 @@ export function buildRealtimeSessionPayload(opts: {
         },
       },
       output: {
-        format: 'pcm16',
+        format: { type: 'audio/pcm', rate: 24000 },
         voice: opts.voice || 'alloy',
       },
     },
