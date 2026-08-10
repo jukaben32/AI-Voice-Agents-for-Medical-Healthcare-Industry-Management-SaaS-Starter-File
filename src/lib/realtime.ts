@@ -25,7 +25,7 @@ export async function resolveRealtimeClinicContext(
   const session = buildRealtimeSessionPayload({
     instructions: context.instructions,
     voice: input.voice || widget?.agentVoice || 'alloy',
-    language: input.language || 'en',
+    language: input.language || widget?.agentLanguage || 'en',
   })
 
   return {

@@ -441,6 +441,7 @@ export interface WidgetConfig extends Widget {
   businessSlug: string
   agentName: string | null
   agentVoice: string | null
+  agentLanguage: string | null
 }
 
 export interface AvailableSlot {

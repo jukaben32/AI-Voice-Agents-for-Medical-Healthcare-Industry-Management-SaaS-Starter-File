@@ -23,7 +23,8 @@ export async function POST(request: Request) {
     const context = await resolveRealtimeClinicContext(admin, {
       businessSlug: parsed.data.businessSlug,
       widgetSlug: parsed.data.widgetSlug ?? null,
-      language: parsed.data.language ?? 'en',
+      voice: parsed.data.voice ?? null,
+      language: parsed.data.language ?? null,
     })
 
     return json({

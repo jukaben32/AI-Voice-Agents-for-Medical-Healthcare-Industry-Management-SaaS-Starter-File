@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Check, Trash2, Plus } from 'lucide-react'
 import type { Business, BusinessAvailability } from '@/types'
 import { DAYS_OF_WEEK } from '@/constants'
@@ -9,6 +9,54 @@ import { updateBusiness, upsertBusinessAvailability, addClosedDate, removeClosed
 import { SectionEyebrow, SectionHeading, SurfaceCard, StatusBadge } from '@/components/clinic/shared'
 
 type ClosedDateRow = { id: string; blocked_date: string; reason: string | null }
+
+// Common IANA zones as a fallback for the rare browser without
+// Intl.supportedValuesOf (Safari <17, older Firefox/Chromium).
+const FALLBACK_TIMEZONES = [
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Anchorage',
+  'Pacific/Honolulu',
+  'America/Santo_Domingo',
+  'America/Puerto_Rico',
+  'America/Mexico_City',
+  'America/Bogota',
+  'America/Lima',
+  'America/Santiago',
+  'America/Sao_Paulo',
+  'America/Buenos_Aires',
+  'Europe/London',
+  'Europe/Madrid',
+  'Europe/Paris',
+  'Europe/Berlin',
+]
+
+function getSupportedTimezones() {
+  if (typeof Intl !== 'undefined' && 'supportedValuesOf' in Intl) {
+    try {
+      return (Intl as unknown as { supportedValuesOf: (key: string) => string[] }).supportedValuesOf('timeZone')
+    } catch {
+      // fall through to the static list below
+    }
+  }
+  return FALLBACK_TIMEZONES
+}
+
+// Currencies actually handled by formatCurrency (lib/utils.ts) plus common
+// ISO-4217 fiat codes Intl.NumberFormat already supports out of the box.
+const CURRENCY_OPTIONS = [
+  { value: 'USDC', label: 'USDC (USD Coin)' },
+  { value: 'USDT', label: 'USDT (Tether)' },
+  { value: 'USD', label: 'USD - US Dollar' },
+  { value: 'DOP', label: 'DOP - Dominican Peso' },
+  { value: 'MXN', label: 'MXN - Mexican Peso' },
+  { value: 'EUR', label: 'EUR - Euro' },
+  { value: 'GBP', label: 'GBP - British Pound' },
+  { value: 'CAD', label: 'CAD - Canadian Dollar' },
+]
 
 function defaultDay(dayOfWeek: number): BusinessAvailability {
   return {
@@ -37,6 +85,18 @@ export function SettingsManager({
 }) {
   const [businessForm, setBusinessForm] = useState({ name: business.name, timezone: business.timezone, paymentCurrency: business.paymentCurrency })
   const [savingBusiness, setSavingBusiness] = useState(false)
+
+  const timezoneOptions = useMemo(() => {
+    const zones = getSupportedTimezones()
+    return zones.includes(businessForm.timezone) ? zones : [businessForm.timezone, ...zones]
+  }, [businessForm.timezone])
+
+  const currencyOptions = useMemo(() => {
+    const normalized = businessForm.paymentCurrency.toUpperCase()
+    return CURRENCY_OPTIONS.some((option) => option.value === normalized)
+      ? CURRENCY_OPTIONS
+      : [{ value: businessForm.paymentCurrency, label: businessForm.paymentCurrency }, ...CURRENCY_OPTIONS]
+  }, [businessForm.paymentCurrency])
   const [businessSaved, setBusinessSaved] = useState(false)
 
   const [availability, setAvailability] = useState<BusinessAvailability[]>(() =>
@@ -117,11 +177,31 @@ export function SettingsManager({
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-[var(--text-strong)]">Timezone</label>
-            <input value={businessForm.timezone} onChange={(e) => setBusinessForm((f) => ({ ...f, timezone: e.target.value }))} className="input-field w-full" placeholder="America/New_York" />
+            <select
+              value={businessForm.timezone}
+              onChange={(e) => setBusinessForm((f) => ({ ...f, timezone: e.target.value }))}
+              className="input-field w-full"
+            >
+              {timezoneOptions.map((zone) => (
+                <option key={zone} value={zone}>
+                  {zone}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-semibold text-[var(--text-strong)]">Currency</label>
-            <input value={businessForm.paymentCurrency} onChange={(e) => setBusinessForm((f) => ({ ...f, paymentCurrency: e.target.value }))} className="input-field w-full" />
+            <select
+              value={businessForm.paymentCurrency}
+              onChange={(e) => setBusinessForm((f) => ({ ...f, paymentCurrency: e.target.value }))}
+              className="input-field w-full"
+            >
+              {currencyOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="sm:col-span-3 flex items-center gap-3">
             <button type="submit" disabled={savingBusiness} className="btn-primary">

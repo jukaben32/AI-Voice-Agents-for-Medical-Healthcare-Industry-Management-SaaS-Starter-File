@@ -33,7 +33,7 @@ function toWidget(row: any): Widget {
 async function getBusinessAndAgentNames(supabase: DbClient, businessId: string, agentId: string | null) {
   const [{ data: business }, { data: agent }] = await Promise.all([
     supabase.from('businesses').select('name, slug').eq('id', businessId).maybeSingle(),
-    agentId ? supabase.from('ai_agents').select('name, voice').eq('id', agentId).maybeSingle() : Promise.resolve({ data: null }),
+    agentId ? supabase.from('ai_agents').select('name, voice, language').eq('id', agentId).maybeSingle() : Promise.resolve({ data: null }),
   ])
 
   return {
@@ -101,6 +101,7 @@ export async function getPublicWidgetConfig(supabase: DbClient, businessSlug: st
     businessSlug: business?.slug ?? businessSlug,
     agentName: agent?.name ?? null,
     agentVoice: agent?.voice ?? null,
+    agentLanguage: agent?.language ?? null,
   }
 
   return config

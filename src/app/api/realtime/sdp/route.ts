@@ -39,7 +39,11 @@ export async function POST(request: Request) {
     const context = await resolveRealtimeClinicContext(admin, {
       businessSlug: parsed.data.businessSlug,
       widgetSlug: parsed.data.widgetSlug ?? null,
-      language: parsed.data.language ?? 'en',
+      // Not `?? 'en'`: resolveRealtimeClinicContext falls back to the
+      // widget's assigned agent's language before defaulting to English, so
+      // forcing 'en' here whenever the caller doesn't pass one would skip
+      // that fallback entirely.
+      language: parsed.data.language ?? null,
     })
 
     const secretResponse = await fetch(OPENAI_CLIENT_SECRETS_URL, {
