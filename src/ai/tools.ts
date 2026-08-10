@@ -226,29 +226,39 @@ export function buildClinicAssistantInstructions(opts: {
   ].join('\n\n')
 }
 
+// GA Realtime session shape (POST /v1/realtime/client_secrets). OpenAI
+// retired the old flat Beta shape (top-level voice/input_audio_format/
+// turn_detection/modalities) on 2026-05-12 in favor of this nested
+// `audio.input` / `audio.output` structure with a `type: 'realtime'`
+// discriminator - see src/app/api/realtime/sdp/route.ts.
 export function buildRealtimeSessionPayload(opts: {
   instructions: string
   voice?: string
   language?: string
 }) {
   return {
+    type: 'realtime' as const,
     model: process.env.OPENAI_REALTIME_MODEL || 'gpt-realtime',
-    voice: opts.voice || 'alloy',
     instructions: opts.instructions,
-    input_audio_format: 'pcm16',
-    output_audio_format: 'pcm16',
-    input_audio_transcription: {
-      model: 'whisper-1',
+    output_modalities: ['audio'],
+    audio: {
+      input: {
+        format: 'pcm16',
+        transcription: {
+          model: 'whisper-1',
+        },
+        turn_detection: {
+          type: 'server_vad',
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          silence_duration_ms: 500,
+        },
+      },
+      output: {
+        format: 'pcm16',
+        voice: opts.voice || 'alloy',
+      },
     },
-    turn_detection: {
-      type: 'server_vad',
-      threshold: 0.5,
-      prefix_padding_ms: 300,
-      silence_duration_ms: 500,
-    },
-    temperature: 0.4,
-    modalities: ['text', 'audio'],
-    language: opts.language || 'en',
     tools: clinicRealtimeTools,
   }
 }

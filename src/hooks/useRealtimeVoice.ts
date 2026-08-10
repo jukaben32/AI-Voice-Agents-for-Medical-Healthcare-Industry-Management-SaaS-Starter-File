@@ -235,8 +235,6 @@ export function useRealtimeVoice() {
         const sessionData: VoiceSessionPayload = await sessionResponse.json()
         setSession(sessionData)
 
-        const model = sessionData.session?.model || 'gpt-realtime'
-
         const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
         micStreamRef.current = micStream
         startAmplitudeMeter(micStream)
@@ -270,19 +268,29 @@ export function useRealtimeVoice() {
           }
         }
         dc.onopen = () => {
+          // GA session shape (nested audio.input/audio.output) - matches
+          // buildRealtimeSessionPayload in src/ai/tools.ts. This is a patch
+          // on top of the session the client secret already created, mainly
+          // so a caller-specified voice can override the business/widget
+          // default baked in server-side.
           dc.send(
             JSON.stringify({
               type: 'session.update',
               session: {
-                model,
-                voice: opts.voice || 'alloy',
                 instructions: sessionData.instructions,
-                input_audio_format: 'pcm16',
-                output_audio_format: 'pcm16',
-                input_audio_transcription: { model: 'whisper-1' },
+                audio: {
+                  input: {
+                    format: 'pcm16',
+                    transcription: { model: 'whisper-1' },
+                    turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+                  },
+                  output: {
+                    format: 'pcm16',
+                    voice: opts.voice || 'alloy',
+                  },
+                },
                 tools: sessionData.tools || [],
                 tool_choice: 'auto',
-                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
               },
             })
           )
