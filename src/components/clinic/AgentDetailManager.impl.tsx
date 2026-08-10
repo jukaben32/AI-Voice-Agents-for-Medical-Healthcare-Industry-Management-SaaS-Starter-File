@@ -17,7 +17,6 @@ import { createClient } from '@/lib/supabase/client'
 import { cn, formatCurrency } from '@/lib/utils'
 import type { AiAgent, ClinicService } from '@/types'
 import { deleteAgent, updateAgent } from '@/services/agents'
-import { createAppointment } from '@/services/appointments'
 import { findOrCreatePatient } from '@/services/patients'
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice'
 import Button from '@/components/ui/Button'
@@ -182,8 +181,15 @@ export function AgentDetailManager({
     return haystack.includes(serviceSearch.toLowerCase().trim())
   })
 
+  const voiceCallActive =
+    voiceCall.status === 'connecting' ||
+    voiceCall.status === 'initializing' ||
+    voiceCall.status === 'listening' ||
+    voiceCall.status === 'thinking' ||
+    voiceCall.status === 'speaking'
+
   async function handleToggleVoiceCall() {
-    if (voiceCall.status === 'connecting' || voiceCall.status === 'connected') {
+    if (voiceCallActive) {
       voiceCall.disconnect()
       return
     }
@@ -191,7 +197,6 @@ export function AgentDetailManager({
     try {
       await voiceCall.connect({
         businessSlug,
-        voice: currentAgent.voice,
         onToolCall: async (toolName, args) => {
           const response = await fetch('/api/realtime/tools', {
             method: 'POST',
@@ -205,6 +210,7 @@ export function AgentDetailManager({
           return body.result
         },
       })
+      await voiceCall.startListening()
     } catch (err) {
       pushToast({
         title: 'Could not start voice call',
@@ -299,14 +305,22 @@ export function AgentDetailManager({
         source: 'manual',
       })
 
-      await createAppointment(supabase, businessId, {
-        patientId: patient.id,
-        agentId: currentAgent.id,
-        serviceId: bookingForm.serviceId,
-        scheduledAt: new Date(bookingForm.dateTime).toISOString(),
-        source: 'manual',
-        notes: bookingForm.notes.trim() || null,
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientId: patient.id,
+          agentId: currentAgent.id,
+          serviceId: bookingForm.serviceId,
+          scheduledAt: new Date(bookingForm.dateTime).toISOString(),
+          source: 'manual',
+          notes: bookingForm.notes.trim() || null,
+        }),
       })
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        throw new Error(body?.error || 'Selected time slot is not available')
+      }
 
       pushToast({
         title: 'Appointment booked',
@@ -657,30 +671,34 @@ export function AgentDetailManager({
                     <button
                       type="button"
                       onClick={() => void handleToggleVoiceCall()}
-                      disabled={voiceCall.status === 'connecting'}
+                      disabled={voiceCall.status === 'connecting' || voiceCall.status === 'initializing'}
                       className={cn(
                         'mx-auto mt-6 grid h-24 w-24 place-items-center rounded-full border text-white shadow-[0_24px_48px_-32px_rgba(15,118,110,0.7)] transition disabled:opacity-70',
-                        voiceCall.status === 'connected' || voiceCall.status === 'connecting'
+                        voiceCallActive
                           ? 'border-[rgba(225,29,72,0.28)] bg-[linear-gradient(135deg,#e11d48,#be123c)]'
                           : 'border-[rgba(15,118,110,0.22)] bg-[linear-gradient(135deg,var(--brand),var(--brand-strong))]'
                       )}
                     >
-                      {voiceCall.status === 'connecting' ? (
+                      {voiceCall.status === 'connecting' || voiceCall.status === 'initializing' ? (
                         <Loader2 className="h-10 w-10 animate-spin" />
-                      ) : voiceCall.status === 'connected' ? (
+                      ) : voiceCallActive ? (
                         <PhoneOff className="h-10 w-10" />
                       ) : (
                         <Mic className="h-10 w-10" />
                       )}
                     </button>
                     <div className="mt-4 text-sm font-semibold text-[var(--text-strong)]">
-                      {voiceCall.status === 'connecting'
+                      {voiceCall.status === 'connecting' || voiceCall.status === 'initializing'
                         ? 'Connecting...'
-                        : voiceCall.status === 'connected'
+                        : voiceCall.status === 'listening'
                           ? 'Listening - tap to end'
-                          : voiceCall.status === 'error'
-                            ? 'Call failed'
-                            : 'Ready to test'}
+                          : voiceCall.status === 'thinking'
+                            ? 'Thinking...'
+                            : voiceCall.status === 'speaking'
+                              ? 'Speaking - tap to end'
+                              : voiceCall.status === 'error'
+                                ? 'Call failed'
+                                : 'Ready to test'}
                     </div>
                     <p className="mt-1 text-sm text-[var(--text-muted)]">
                       {voiceCall.error ? voiceCall.error : 'Click the mic to start a call and stream the transcript live.'}
@@ -713,7 +731,7 @@ export function AgentDetailManager({
                   <div className="mt-4 space-y-3">
                     {voiceCall.messages.length === 0 ? (
                       <p className="text-sm text-[var(--text-muted)]">
-                        {voiceCall.status === 'connected' ? 'Listening for the first thing you say...' : 'No conversation yet.'}
+                        {voiceCallActive ? 'Listening for the first thing you say...' : 'No conversation yet.'}
                       </p>
                     ) : (
                       voiceCall.messages.map((message) => (
