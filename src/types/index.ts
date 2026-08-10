@@ -268,6 +268,12 @@ export interface Website {
   satisfactionPct: number | null
   trustBadges: string[]
   featuredServiceIds: string[]
+  socialYoutube: string | null
+  socialFacebook: string | null
+  socialInstagram: string | null
+  socialTiktok: string | null
+  socialLinkedin: string | null
+  socialPinterest: string | null
   createdAt: string
   updatedAt: string
 }
@@ -354,6 +360,8 @@ export interface WebsiteSubscriber {
   businessId: string
   email: string
   name: string | null
+  phone: string | null
+  message: string | null
   source: string
   createdAt: string
 }

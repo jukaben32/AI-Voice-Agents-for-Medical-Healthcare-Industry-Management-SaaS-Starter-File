@@ -642,6 +642,12 @@ create table if not exists websites (
   satisfaction_pct numeric(5,2),
   trust_badges text[] not null default '{}',
   featured_service_ids uuid[] not null default '{}',
+  social_youtube text,
+  social_facebook text,
+  social_instagram text,
+  social_tiktok text,
+  social_linkedin text,
+  social_pinterest text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -673,6 +679,8 @@ create table if not exists website_subscribers (
   business_id uuid not null references businesses(id) on delete cascade,
   email text not null,
   name text,
+  phone text,
+  message text,
   source text not null default 'website',
   created_at timestamptz not null default now()
 );

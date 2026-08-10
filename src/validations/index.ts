@@ -183,6 +183,12 @@ export const websiteSchema = z.object({
   satisfactionPct: z.number().min(0).max(100).optional().nullable(),
   trustBadges: z.array(z.string()).optional(),
   featuredServiceIds: z.array(z.string().uuid()).optional(),
+  socialYoutube: z.string().url().optional().nullable(),
+  socialFacebook: z.string().url().optional().nullable(),
+  socialInstagram: z.string().url().optional().nullable(),
+  socialTiktok: z.string().url().optional().nullable(),
+  socialLinkedin: z.string().url().optional().nullable(),
+  socialPinterest: z.string().url().optional().nullable(),
 })
 
 export const websiteServiceSchema = z.object({
@@ -331,6 +337,8 @@ export const realtimeConversationEndSchema = z.object({
 export const websiteSubscriberSchema = z.object({
   email: z.string().email(),
   name: z.string().max(120).optional().nullable(),
+  phone: z.string().max(40).optional().nullable(),
+  message: z.string().max(4000).optional().nullable(),
   source: z.string().max(80).optional(),
 })
 
