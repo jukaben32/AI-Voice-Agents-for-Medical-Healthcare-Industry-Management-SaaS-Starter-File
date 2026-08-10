@@ -8,16 +8,9 @@ import { getPatientById } from '@/services/patients'
 import { recordBillingTransaction } from '@/services/billing'
 import { recordAppointmentPayment } from '@/services/appointments'
 import { createNotification } from '@/services/notifications'
+import { verifyUsdcPayment } from '@/lib/onchain'
 import type { PublicBusinessProfile } from '@/types'
 
-// NOTE: this endpoint records a payment as CONFIRMED based on client-reported
-// data (amount/txHash/status) — it does not verify the transaction on-chain.
-// The auth/ownership check below stops one patient from confirming payment
-// for someone else's appointment, but a signed-in patient can still report a
-// fabricated txHash for their OWN appointment and have it marked paid. Real
-// protection requires server-side verification of the tx (receipt status,
-// token transfer amount/recipient) against an RPC provider before trusting
-// `status: 'confirmed'`. Flagged for follow-up once an RPC provider is chosen.
 export async function POST(request: Request) {
   const { user } = await getServerSupabaseAndUser()
   if (!user) {
@@ -70,6 +63,28 @@ export async function POST(request: Request) {
 
   const paymentType = parsed.data.paymentType || (parsed.data.appointmentId ? 'booking_deposit' : 'portal_topup')
   const status = parsed.data.status || 'confirmed'
+
+  // Only "confirmed" is a claim we need to check — 'pending'/'failed' don't
+  // assert money moved. A signed-in patient could otherwise report a
+  // fabricated txHash for their OWN appointment (the auth check above only
+  // stops them acting on someone ELSE's) and have it accepted as paid.
+  if (status === 'confirmed') {
+    if (parsed.data.currency.toUpperCase() !== 'USDC') {
+      return apiError(`Unsupported payment currency for verification: ${parsed.data.currency}`, 422)
+    }
+    if (!business.paymentWalletAddress) {
+      return apiError('This business has not configured a payment wallet yet', 422)
+    }
+    const verification = await verifyUsdcPayment({
+      txHash: parsed.data.txHash,
+      chainId: parsed.data.chainId,
+      expectedRecipient: business.paymentWalletAddress,
+      expectedMinAmount: parsed.data.amount,
+    })
+    if (!verification.ok) {
+      return apiError(`Payment could not be verified on-chain: ${verification.reason}`, 402)
+    }
+  }
 
   const payment = parsed.data.appointmentId
     ? await recordAppointmentPayment(admin, business.id, parsed.data.appointmentId, {
