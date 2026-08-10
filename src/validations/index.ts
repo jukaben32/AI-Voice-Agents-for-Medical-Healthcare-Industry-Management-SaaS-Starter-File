@@ -261,6 +261,11 @@ export const businessSettingsSchema = z.object({
   bookingDepositAmount: z.number().positive().optional().nullable(),
 })
 
+export const stripeAccountSchema = z.object({
+  publishableKey: z.string().regex(/^pk_(live|test)_/, 'Must start with pk_live_ or pk_test_'),
+  secretKey: z.string().regex(/^sk_(live|test)_/, 'Must start with sk_live_ or sk_test_'),
+})
+
 export const realtimeSessionSchema = z.object({
   businessSlug: z.string().min(2),
   widgetSlug: slugSchema.optional(),
@@ -301,6 +306,7 @@ export const websiteSubscriberSchema = z.object({
 
 export type BusinessInput = z.infer<typeof businessSchema>
 export type BusinessSettingsInput = z.infer<typeof businessSettingsSchema>
+export type StripeAccountInput = z.infer<typeof stripeAccountSchema>
 export type AvailabilityInput = z.infer<typeof availabilitySchema>
 export type ClinicServiceInput = z.infer<typeof clinicServiceSchema>
 export type AgentInput = z.infer<typeof agentSchema>
