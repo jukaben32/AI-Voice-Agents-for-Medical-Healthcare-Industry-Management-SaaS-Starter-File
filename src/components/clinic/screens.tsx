@@ -794,39 +794,14 @@ export function PortalLoginScreen() {
   )
 }
 
-export function PortalSupportScreen() {
-  return (
-    <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-      <SurfaceCard className="p-6">
-        <SectionHeading
-          eyebrow={<SectionEyebrow>Support</SectionEyebrow>}
-          title="Open a ticket in seconds"
-          description="Ask for a receipt, a schedule change, or help with the portal. The clinic gets the ticket right away."
-        />
-        <div className="mt-6 space-y-3">
-          {['Billing', 'Reschedule', 'Prescription question', 'Appointment note'].map((subject) => (
-            <div key={subject} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3 text-sm font-semibold text-[var(--text-strong)]">
-              {subject}
-            </div>
-          ))}
-        </div>
-      </SurfaceCard>
-      <SurfaceCard className="p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Conversation</div>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">Need help with an appointment</h2>
-          </div>
-          <StatusBadge tone="teal">Open</StatusBadge>
-        </div>
-        <div className="mt-5 space-y-3">
-          <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">I need to move my appointment to later this week.</div>
-          <div className="ml-auto max-w-[85%] rounded-2xl bg-teal-500 px-4 py-3 text-sm text-white">Of course. I can help with that right now.</div>
-        </div>
-      </SurfaceCard>
-    </div>
-  )
-}
+// PortalSupportScreen was removed from here — the ticket list was 4
+// literal subject strings with no click handler, and the "conversation"
+// was two hardcoded chat bubbles. A real version now lives in
+// src/components/portal/PortalSupportManager.tsx, wired to
+// /api/portal/support (create/list tickets) and
+// /api/portal/support/[id]/messages (thread + reply) — patients have no
+// RLS write access to support_tickets/support_messages, so those routes
+// run on the admin client after verifying ticket ownership.
 
 export function WidgetDemoScreen() {
   return (

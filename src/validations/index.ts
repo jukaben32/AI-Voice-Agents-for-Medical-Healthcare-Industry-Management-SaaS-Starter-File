@@ -243,6 +243,20 @@ export const websiteSiteUrlSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
 })
 
+// senderType is deliberately not accepted from the client here - the
+// portal message route always forces it to 'patient' server-side, so a
+// signed-in patient can't post a message that renders as if it came from
+// staff or the system.
+export const portalSupportTicketSchema = z.object({
+  appointmentId: z.string().uuid().optional().nullable(),
+  subject: z.string().min(2).max(200),
+  description: z.string().max(5000).optional().nullable(),
+})
+
+export const portalSupportMessageSchema = z.object({
+  content: z.string().min(1).max(10000),
+})
+
 export const supportTicketSchema = z.object({
   patientId: z.string().uuid().optional().nullable(),
   appointmentId: z.string().uuid().optional().nullable(),

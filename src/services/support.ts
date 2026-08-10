@@ -44,13 +44,21 @@ function toMessage(row: any): SupportMessage {
   }
 }
 
-export async function listSupportTickets(supabase: DbClient, businessId: string, limit = 50) {
-  const { data, error } = await supabase
+export async function listSupportTickets(supabase: DbClient, businessId: string, opts: number | { limit?: number; patientId?: string } = 50) {
+  const { limit = 50, patientId } = typeof opts === 'number' ? { limit: opts } : opts
+
+  let query = supabase
     .from('support_tickets')
     .select('*, patients(name, email, phone), appointments(id, scheduled_at, status)')
     .eq('business_id', businessId)
     .order('updated_at', { ascending: false })
     .limit(limit)
+
+  if (patientId) {
+    query = query.eq('patient_id', patientId)
+  }
+
+  const { data, error } = await query
   if (error) throw error
   return (data ?? []).map(toTicket)
 }
