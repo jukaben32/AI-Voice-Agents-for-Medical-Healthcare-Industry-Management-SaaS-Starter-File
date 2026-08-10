@@ -180,3 +180,12 @@ export async function getPatientByAuthUserId(supabase: DbClient, businessId: str
   if (error) throw error
   return data ? toPatient(data) : null
 }
+
+// For the patient portal, which isn't scoped to a single businessId ahead of
+// time - the "patients can read their own record" RLS policy already scopes
+// this to the caller's own row(s), same as getPatientAppointmentsForPortal.
+export async function getPortalPatientForAuthUser(supabase: DbClient, authUserId: string) {
+  const { data, error } = await supabase.from('patients').select('*').eq('auth_user_id', authUserId).limit(1).maybeSingle()
+  if (error) throw error
+  return data ? toPatient(data) : null
+}

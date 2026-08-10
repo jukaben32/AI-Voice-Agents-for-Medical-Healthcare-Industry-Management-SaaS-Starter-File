@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { apiError, json, readJson } from '@/lib/api'
 import { portalCheckEmailSchema } from '@/validations'
 import { getBusinessBySlug } from '@/services/business'
-import { getPatientByEmail } from '@/services/patients'
+import { findOrCreatePatient, getPatientByEmail } from '@/services/patients'
 
 function isPortalPath(pathname: string) {
   return pathname === '/portal' || pathname.startsWith('/portal/')
@@ -55,7 +55,21 @@ export async function POST(request: Request) {
     return apiError('Business not found', 404)
   }
 
-  const patient = await getPatientByEmail(admin, business.id, parsed.data.email)
+  let patient = await getPatientByEmail(admin, business.id, parsed.data.email)
+
+  // Registration form: create/update the patient record with the name and
+  // phone the visitor just typed, before the magic link goes out, so that
+  // when they click through, the auth callback finds this record (by
+  // email) instead of creating a bare placeholder patient.
+  if (parsed.data.name) {
+    patient = await findOrCreatePatient(admin, business.id, {
+      name: parsed.data.name,
+      email: parsed.data.email,
+      phone: parsed.data.phone || null,
+      source: 'portal',
+    })
+  }
+
   const supabase = await createServerSupabaseClient()
   const redirectUrl = new URL('/api/auth/callback', origin)
   const defaultNext = `/portal?businessSlug=${encodeURIComponent(business.slug)}`

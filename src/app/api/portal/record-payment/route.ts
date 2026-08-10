@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getServerSupabaseAndUser } from '@/lib/route-helpers'
 import { apiError, json, readJson } from '@/lib/api'
@@ -9,6 +10,7 @@ import { recordBillingTransaction } from '@/services/billing'
 import { recordAppointmentPayment } from '@/services/appointments'
 import { createNotification } from '@/services/notifications'
 import { verifyUsdcPayment } from '@/lib/onchain'
+import { DEFAULT_CHAIN_ID } from '@/constants'
 import type { PublicBusinessProfile } from '@/types'
 
 export async function POST(request: Request) {
@@ -62,7 +64,12 @@ export async function POST(request: Request) {
   }
 
   const paymentType = parsed.data.paymentType || (parsed.data.appointmentId ? 'booking_deposit' : 'portal_topup')
-  const status = parsed.data.status || 'confirmed'
+  const isCash = parsed.data.currency.toUpperCase() === 'CASH'
+  // Cash is never "confirmed" from the portal - nothing has actually been
+  // paid yet, the patient is just committing to pay at the clinic. Staff
+  // marks it received later from the dashboard (the existing "Mark as Cash
+  // Paid" action), same as a patient calling in to say the same thing.
+  const status = isCash ? 'pending' : parsed.data.status || 'confirmed'
 
   // Only "confirmed" is a claim we need to check — 'pending'/'failed' don't
   // assert money moved. A signed-in patient could otherwise report a
@@ -74,6 +81,9 @@ export async function POST(request: Request) {
     }
     if (!business.paymentWalletAddress) {
       return apiError('This business has not configured a payment wallet yet', 422)
+    }
+    if (!parsed.data.txHash || !parsed.data.chainId) {
+      return apiError('txHash and chainId are required to verify a confirmed payment', 422)
     }
     const verification = await verifyUsdcPayment({
       txHash: parsed.data.txHash,
@@ -94,6 +104,7 @@ export async function POST(request: Request) {
         txHash: parsed.data.txHash,
         status,
         paymentType,
+        appointmentPaymentStatus: isCash ? 'cash' : undefined,
         metadata: parsed.data.metadata ?? null,
       })
     : await recordBillingTransaction(admin, business.id, {
@@ -101,8 +112,8 @@ export async function POST(request: Request) {
         patientId: parsed.data.patientId ?? null,
         amount: parsed.data.amount,
         currency: parsed.data.currency,
-        chainId: parsed.data.chainId,
-        txHash: parsed.data.txHash,
+        chainId: parsed.data.chainId ?? DEFAULT_CHAIN_ID,
+        txHash: parsed.data.txHash ?? `cash-${randomUUID()}`,
         status,
         paymentType,
         metadata: parsed.data.metadata ?? null,

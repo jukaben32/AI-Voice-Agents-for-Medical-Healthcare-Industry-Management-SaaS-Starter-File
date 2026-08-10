@@ -12,7 +12,6 @@ import {
   LifeBuoy,
   LineChart,
   Lock,
-  MessageSquare,
   Mic,
   NotebookText,
   ShieldCheck,
@@ -731,73 +730,27 @@ export function MarketingHomeScreen() {
 // (services/business.ts getSubscription), payment wallet config, and
 // billing_transactions history (services/billing.ts, already existed).
 
-export function PortalHomeScreen() {
-  return (
-    <div className="space-y-8">
-      <div className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_55px_rgba(15,23,42,0.06)]">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <SectionEyebrow>Patient portal</SectionEyebrow>
-            <h1 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-strong)]">Welcome back, Dault Hussain</h1>
-            <p className="mt-2 text-sm text-[var(--text-muted)]">Manage appointments, receipts, support tickets, and reminders.</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/portal/appointments" icon="calendar">
-              View appointments
-            </ButtonLink>
-            <ButtonLink href="/portal/support" variant="secondary" icon="none">
-              Open support
-            </ButtonLink>
-          </div>
-        </div>
-      </div>
+// PortalHomeScreen was removed from here — "Welcome back, Dault Hussain",
+// a fixed "Apr 28, 2026" appointment and 3 fake "Messages" were all
+// literals. A real version now lives in
+// src/components/portal/PortalHomeManager.tsx, fed by real patient +
+// appointment data (services/patients.ts getPortalPatientForAuthUser,
+// services/appointments.ts getPatientAppointmentsForPortal) from
+// src/app/(portal)/portal/page.tsx.
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <ValueCard label="Upcoming" value="1" icon={CalendarDays} tone="teal" />
-        <ValueCard label="Paid" value="$90" icon={Wallet} tone="emerald" />
-        <ValueCard label="Messages" value="3" icon={MessageSquare} tone="blue" />
-        <ValueCard label="Portal status" value="Active" icon={ShieldCheck} tone="rose" />
-      </div>
+// PortalRegisterScreen was removed from here — the "inputs" were static
+// divs with placeholder text, and the submit button just linked to
+// /portal without creating anything. A real version now lives in
+// src/components/portal/PortalRegisterForm.tsx, which posts to
+// /api/portal/check-email (pre-creates the patient record, then sends a
+// magic link).
 
-      <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Upcoming appointment</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">General Consultation</h2>
-            </div>
-            <StatusBadge tone="blue">Booked</StatusBadge>
-          </div>
-          <div className="mt-5 space-y-3 rounded-[24px] border border-[var(--border-soft)] bg-[var(--panel-soft)] p-5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--text-muted)]">Date</span>
-              <strong className="text-sm text-[var(--text-strong)]">Apr 28, 2026</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--text-muted)]">Time</span>
-              <strong className="text-sm text-[var(--text-strong)]">9:00 AM - 9:30 AM</strong>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-[var(--text-muted)]">Clinic</span>
-              <strong className="text-sm text-[var(--text-strong)]">Dr. Jonathan M. Harrington</strong>
-            </div>
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-6">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Portal activity</div>
-          <div className="mt-5 space-y-3">
-            {portalTimeline.map((item) => (
-              <div key={item.title} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div className="text-sm font-bold text-[var(--text-strong)]">{item.title}</div>
-                <div className="text-xs text-[var(--text-muted)]">{item.description}</div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-      </div>
-    </div>
-  )
-}
+// PortalAppointmentsScreen was removed from here — the "Reschedule" and
+// "Cancel" buttons were ButtonLinks back to the same page, no-ops. A real
+// version now lives in src/components/portal/PortalAppointmentsManager.tsx,
+// wired to the new /api/portal/appointments/[id]/cancel, /reschedule and
+// /slots routes (patients have no direct RLS write access to appointments,
+// so those routes run on the admin client after verifying ownership).
 
 export function PortalLoginScreen() {
   return (
@@ -837,96 +790,6 @@ export function PortalLoginScreen() {
           <PortalLoginForm />
         </Suspense>
       </SurfaceCard>
-    </div>
-  )
-}
-
-export function PortalRegisterScreen() {
-  return (
-    <div className="grid min-h-[calc(100vh-0px)] gap-8 px-4 py-6 lg:grid-cols-[1fr_0.94fr] lg:px-8">
-      <SurfaceCard className="p-8">
-        <SectionEyebrow>Patient onboarding</SectionEyebrow>
-        <h2 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-strong)]">Create your portal profile</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {[
-            'Full name',
-            'Email address',
-            'Phone number',
-            'Date of birth',
-          ].map((label) => (
-            <div key={label} className="space-y-2">
-              <div className="text-sm font-semibold text-[var(--text-strong)]">{label}</div>
-              <div className="rounded-2xl border border-[var(--border-soft)] bg-white px-4 py-3 text-sm text-[var(--text-muted)]">
-                {label === 'Date of birth' ? 'MM / DD / YYYY' : `Enter ${label.toLowerCase()}`}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 space-y-4">
-          <ButtonLink href="/portal" icon="calendar">
-            Continue to portal
-          </ButtonLink>
-          <div className="text-sm text-[var(--text-muted)]">
-            We use this info to sync your appointments, reminders, and receipts.
-          </div>
-        </div>
-      </SurfaceCard>
-      <SurfaceCard className="relative overflow-hidden bg-slate-950 p-8 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(14,165,233,0.24),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.22),transparent_34%)]" />
-        <div className="relative">
-          <BrandMark />
-          <h1 className="mt-10 text-4xl font-black tracking-tight sm:text-5xl">Everything the clinic needs, from a patient account</h1>
-          <p className="mt-4 max-w-lg text-sm leading-7 text-white/76">
-            View your appointments, receive reminders, and open support tickets without calling the front desk.
-          </p>
-        </div>
-      </SurfaceCard>
-    </div>
-  )
-}
-
-export function PortalAppointmentsScreen() {
-  return (
-    <div className="space-y-8">
-      <SectionHeading
-        eyebrow={<SectionEyebrow>Appointments</SectionEyebrow>}
-        title="Reschedule, cancel, and review your upcoming visits"
-        description="Patients can self-serve within policy, while the clinic stays informed and in control."
-      />
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <SurfaceCard className="p-6">
-          <div className="space-y-3">
-            {portalTimeline.map((item) => (
-              <div key={item.title} className="rounded-[22px] border border-[var(--border-soft)] bg-[var(--panel-soft)] px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-[var(--text-strong)]">{item.title}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{item.description}</div>
-                  </div>
-                  <StatusBadge tone={item.tone}>Upcoming</StatusBadge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SurfaceCard>
-        <SurfaceCard className="p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">Details</div>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--text-strong)]">General Consultation</h2>
-            </div>
-            <StatusBadge tone="blue">Booked</StatusBadge>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <ButtonLink href="/portal/appointments" icon="none">
-              Reschedule
-            </ButtonLink>
-            <ButtonLink href="/portal/appointments" variant="secondary" icon="none">
-              Cancel appointment
-            </ButtonLink>
-          </div>
-        </SurfaceCard>
-      </div>
     </div>
   )
 }

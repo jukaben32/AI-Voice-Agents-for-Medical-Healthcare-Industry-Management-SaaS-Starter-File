@@ -107,15 +107,30 @@ export const portalCheckEmailSchema = z.object({
   email: z.string().email(),
   businessSlug: z.string().optional(),
   next: z.string().optional(),
+  // Present only on the registration form - when set, the patient record is
+  // created/updated with these details before the magic link is sent.
+  name: z.string().min(1).max(120).optional(),
+  phone: z.string().max(40).optional(),
+})
+
+export const portalCancelAppointmentSchema = z.object({
+  reason: z.string().max(2000).optional().nullable(),
+})
+
+export const portalRescheduleAppointmentSchema = z.object({
+  scheduledAt: z.string().datetime(),
 })
 
 export const portalRecordPaymentSchema = z.object({
   appointmentId: z.string().uuid().optional().nullable(),
   patientId: z.string().uuid().optional().nullable(),
   amount: z.number().positive(),
+  // 'CASH' is a special case handled separately in the route: no on-chain
+  // verification, no chainId/txHash required - it just flags that the
+  // patient committed to paying at the clinic.
   currency: z.string().min(3).max(10),
-  chainId: z.number().int().positive(),
-  txHash: z.string().min(4),
+  chainId: z.number().int().positive().optional(),
+  txHash: z.string().min(4).optional(),
   status: z.enum(['pending', 'confirmed', 'failed', 'refunded']).optional(),
   paymentType: z.enum(['booking_deposit', 'full_payment', 'subscription', 'portal_topup']).optional(),
   metadata: z.record(z.unknown()).optional().nullable(),
