@@ -16,6 +16,8 @@ import { createClient } from '@/lib/supabase/client'
 import { cn, formatCurrency } from '@/lib/utils'
 import type { AiAgent, ClinicService } from '@/types'
 import { deleteAgent, updateAgent } from '@/services/agents'
+import { createAppointment } from '@/services/appointments'
+import { findOrCreatePatient } from '@/services/patients'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Input from '@/components/ui/Input'
@@ -154,6 +156,7 @@ export function AgentDetailManager({
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(getServiceIds(agent))
   const [serviceSearch, setServiceSearch] = useState('')
   const [saving, setSaving] = useState(false)
+  const [bookingSaving, setBookingSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [toasts, setToasts] = useState<ManagerToast[]>([])
   const [bookingForm, setBookingForm] = useState({
@@ -252,11 +255,63 @@ export function AgentDetailManager({
 
   async function handleBookAppointment(event: FormEvent) {
     event.preventDefault()
-    pushToast({
-      title: 'Test appointment prepared',
-      message: 'The booking flow is ready to connect to your live scheduling backend.',
-      tone: 'blue',
-    })
+
+    if (!bookingForm.fullName.trim()) {
+      pushToast({ title: 'Full name is required', tone: 'rose' })
+      return
+    }
+    if (!bookingForm.serviceId) {
+      pushToast({ title: 'Select a service', tone: 'rose' })
+      return
+    }
+    if (!bookingForm.dateTime) {
+      pushToast({ title: 'Pick a date and time', tone: 'rose' })
+      return
+    }
+
+    setBookingSaving(true)
+    try {
+      const supabase = createClient()
+      const patient = await findOrCreatePatient(supabase, businessId, {
+        name: bookingForm.fullName.trim(),
+        email: bookingForm.email.trim() || null,
+        phone: bookingForm.phone.trim() || null,
+        dateOfBirth: bookingForm.dateOfBirth || null,
+        source: 'manual',
+      })
+
+      await createAppointment(supabase, businessId, {
+        patientId: patient.id,
+        agentId: currentAgent.id,
+        serviceId: bookingForm.serviceId,
+        scheduledAt: new Date(bookingForm.dateTime).toISOString(),
+        source: 'manual',
+        notes: bookingForm.notes.trim() || null,
+      })
+
+      pushToast({
+        title: 'Appointment booked',
+        message: `${bookingForm.fullName.trim()} is on the schedule.`,
+        tone: 'emerald',
+      })
+      setBookingForm((current) => ({
+        fullName: '',
+        phone: '',
+        email: '',
+        dateOfBirth: '',
+        serviceId: current.serviceId,
+        dateTime: '',
+        notes: '',
+      }))
+    } catch (err) {
+      pushToast({
+        title: 'Could not book appointment',
+        message: err instanceof Error ? err.message : 'Something went wrong',
+        tone: 'rose',
+      })
+    } finally {
+      setBookingSaving(false)
+    }
   }
 
   return (
@@ -693,9 +748,18 @@ export function AgentDetailManager({
                     <div className="text-sm text-[var(--text-muted)]">
                       The booking form mirrors the patient-facing appointment flow.
                     </div>
-                    <Button type="submit">
-                      <CalendarDays className="mr-2 h-4 w-4" />
-                      Book Appointment
+                    <Button type="submit" disabled={bookingSaving}>
+                      {bookingSaving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Booking...
+                        </>
+                      ) : (
+                        <>
+                          <CalendarDays className="mr-2 h-4 w-4" />
+                          Book Appointment
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>

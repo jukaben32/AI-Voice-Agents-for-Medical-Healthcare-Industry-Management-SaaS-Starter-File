@@ -127,6 +127,7 @@ export async function findOrCreatePatient(
     name: string
     email?: string | null
     phone?: string | null
+    dateOfBirth?: string | null
     authUserId?: string | null
     source?: Patient['source']
     notes?: string | null
@@ -151,6 +152,7 @@ export async function findOrCreatePatient(
       name: input.name || existing.name,
       email: input.email ?? existing.email,
       phone: input.phone ?? existing.phone,
+      dateOfBirth: input.dateOfBirth ?? existing.dateOfBirth,
       authUserId: authUserId ?? existing.authUserId,
       source: input.source ?? existing.source,
       notes: input.notes ?? existing.notes,
@@ -161,6 +163,7 @@ export async function findOrCreatePatient(
     name: input.name,
     email: input.email ?? null,
     phone: input.phone ?? null,
+    dateOfBirth: input.dateOfBirth ?? null,
     authUserId,
     source: input.source ?? 'manual',
     notes: input.notes ?? null,
