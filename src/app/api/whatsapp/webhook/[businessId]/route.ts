@@ -1,5 +1,6 @@
+import { timingSafeEqual } from 'node:crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { json } from '@/lib/api'
+import { apiError, json } from '@/lib/api'
 import { getBusinessById } from '@/services/business'
 import { getAgentById } from '@/services/agents'
 import { appendConversationMessage, createConversation, listConversationMessages } from '@/services/conversations'
@@ -29,7 +30,30 @@ function extractInboundText(data: Record<string, unknown>): string | null {
   return null
 }
 
+function verifyToken(expected: string, provided: string): boolean {
+  const expectedBuf = Buffer.from(expected)
+  const providedBuf = Buffer.from(provided)
+  if (expectedBuf.length !== providedBuf.length) return false
+  return timingSafeEqual(expectedBuf, providedBuf)
+}
+
 export async function POST(request: Request, { params }: { params: { businessId: string } }) {
+  const supabase = createAdminClient()
+
+  const connection = await getWhatsappConnection(supabase, params.businessId)
+  if (!connection || !connection.is_enabled || !connection.agent_id) {
+    return json({ ok: true })
+  }
+
+  // The webhook URL registered with Evolution API embeds the instance token
+  // as a shared secret (see connectWhatsapp in services/whatsapp.ts). Reject
+  // any POST that doesn't present it — otherwise anyone who learns/guesses a
+  // businessId could post forged WhatsApp events for that business.
+  const providedToken = new URL(request.url).searchParams.get('token')
+  if (!connection.instance_token || !providedToken || !verifyToken(connection.instance_token, providedToken)) {
+    return apiError('Unauthorized', 401)
+  }
+
   const payload = await request.json().catch(() => null)
   if (!payload) {
     return json({ ok: true })
@@ -58,12 +82,6 @@ export async function POST(request: Request, { params }: { params: { businessId:
   }
 
   const pushName = typeof data.pushName === 'string' ? data.pushName : null
-  const supabase = createAdminClient()
-
-  const connection = await getWhatsappConnection(supabase, params.businessId)
-  if (!connection || !connection.is_enabled || !connection.agent_id) {
-    return json({ ok: true })
-  }
 
   const [business, agent, services, faqs] = await Promise.all([
     getBusinessById(supabase, params.businessId),

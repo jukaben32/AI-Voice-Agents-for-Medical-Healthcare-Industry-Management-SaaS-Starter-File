@@ -221,9 +221,13 @@ alter table ai_agents enable row level security;
 drop policy if exists "agents access by business members" on ai_agents;
 create policy "agents access by business members"
   on ai_agents for all using (has_business_access(business_id));
+-- No public/anon read policy: the widget, booking flow, and realtime voice
+-- session all resolve agent data server-side through the service-role admin
+-- client (see getPublicWidgetConfig / getBusinessAndAgentNames), scoped by
+-- businessSlug. A table-wide "status = 'live'" policy would let anyone with
+-- the public anon key read every business's agents directly via PostgREST,
+-- including system_prompt.
 drop policy if exists "public can read live agents" on ai_agents;
-create policy "public can read live agents"
-  on ai_agents for select using (status = 'live');
 
 -- 5. CLINIC SERVICES
 create table if not exists clinic_services (
@@ -259,9 +263,13 @@ alter table clinic_services enable row level security;
 drop policy if exists "services access by business members" on clinic_services;
 create policy "services access by business members"
   on clinic_services for all using (has_business_access(business_id));
+-- No public/anon read policy: pricing and clinical `instructions` are
+-- internal. Public booking flows read the separate, intentionally-curated
+-- website_services table (scoped to published websites) or go through the
+-- service-role admin client server-side. A table-wide "active = true"
+-- policy would leak every business's service pricing/instructions to
+-- anyone with the public anon key via direct PostgREST access.
 drop policy if exists "public can read active services" on clinic_services;
-create policy "public can read active services"
-  on clinic_services for select using (active = true);
 
 -- 6. PATIENTS
 create table if not exists patients (
@@ -300,7 +308,30 @@ create policy "patients can read their own record"
   on patients for select using (auth_user_id = auth.uid());
 drop policy if exists "patients can update their own record" on patients;
 create policy "patients can update their own record"
-  on patients for update using (auth_user_id = auth.uid());
+  on patients for update
+  using (auth_user_id = auth.uid())
+  with check (auth_user_id = auth.uid());
+
+-- business_id must never change after a patient row is created: without this,
+-- a patient could self-service UPDATE their own row's business_id (the RLS
+-- policy above only re-checks auth_user_id, not business_id) and silently
+-- move their record into a different clinic's tenant.
+create or replace function prevent_patient_business_id_change()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.business_id is distinct from old.business_id then
+    raise exception 'business_id cannot be changed on an existing patient record';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists prevent_patients_business_id_change on patients;
+create trigger prevent_patients_business_id_change
+before update on patients
+for each row execute function prevent_patient_business_id_change();
 
 -- 7. BUSINESS AVAILABILITY
 create table if not exists business_availability (
@@ -568,9 +599,13 @@ alter table widgets enable row level security;
 drop policy if exists "widgets access by business members" on widgets;
 create policy "widgets access by business members"
   on widgets for all using (has_business_access(business_id));
+-- No public/anon read policy: the embeddable widget script fetches its
+-- config through /api/widget/config server-side (service-role admin
+-- client, scoped by businessSlug), never via the browser's anon Supabase
+-- client. A table-wide "enabled = true" policy would expose every
+-- business's allowed_origins, theme, and impression/interaction metrics
+-- to anyone with the public anon key via direct PostgREST access.
 drop policy if exists "public can read enabled widgets" on widgets;
-create policy "public can read enabled widgets"
-  on widgets for select using (enabled = true);
 
 -- 13. WEBSITES
 create table if not exists websites (
@@ -968,24 +1003,15 @@ create policy "patients can see their billing rows"
   );
 
 -- 17. OPTIONAL HELPER VIEW FOR DASHBOARDS
-create or replace view business_public_profiles as
-select
-  id,
-  name,
-  slug,
-  specialty,
-  description,
-  logo_url,
-  phone,
-  booking_email,
-  timezone,
-  address,
-  website,
-  city,
-  state,
-  zip_code,
-  payment_wallet_address,
-  payment_chain_id,
-  payment_currency
-from businesses;
+-- Removed: `business_public_profiles` was an unused view (no code in the app
+-- ever queried it) that selected phone/address/payment_wallet_address
+-- straight out of `businesses`. Views in Postgres run with the *owner's*
+-- privileges when checking table access, and migration-run roles typically
+-- have BYPASSRLS, so a plain `select ... from businesses` view like this
+-- would ignore businesses' RLS policies entirely and expose every clinic's
+-- contact/payment info to anyone with SELECT on the view (anon/authenticated
+-- get that by default in Supabase). If a public business directory is
+-- needed later, build it as a `security_invoker = true` view (PG15+) with an
+-- explicit, narrow column list and re-add RLS-aware filtering.
+drop view if exists business_public_profiles;
 

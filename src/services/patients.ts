@@ -1,7 +1,7 @@
 import type { Patient } from '@/types'
 import type { DbClient } from './_shared'
 
-function toPatient(row: any): Patient {
+export function toPatient(row: any): Patient {
   return {
     id: row.id,
     businessId: row.business_id,

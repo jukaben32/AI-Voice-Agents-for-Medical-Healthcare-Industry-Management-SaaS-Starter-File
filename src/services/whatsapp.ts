@@ -29,7 +29,12 @@ export async function connectWhatsapp(
   const { instanceToken } = await evolutionCreateInstance(instanceName)
   if (!instanceToken) throw new Error('Evolution API did not return an instance token')
 
-  const webhookUrl = `${appUrl.replace(/\/$/, '')}/api/whatsapp/webhook/${businessId}`
+  // The instance token doubles as a webhook shared secret: Evolution API has
+  // no built-in signing for its outbound webhook calls, so we embed it in
+  // the URL and the webhook handler verifies it on every inbound POST. This
+  // stops anyone who guesses/enumerates a businessId from posting forged
+  // WhatsApp events for that business.
+  const webhookUrl = `${appUrl.replace(/\/$/, '')}/api/whatsapp/webhook/${businessId}?token=${encodeURIComponent(instanceToken)}`
   await evolutionSetWebhook(instanceName, instanceToken, webhookUrl)
   const qrCode = await evolutionGetQrCode(instanceName, instanceToken)
 

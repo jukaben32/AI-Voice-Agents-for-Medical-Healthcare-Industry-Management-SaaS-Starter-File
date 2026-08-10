@@ -2,7 +2,7 @@ import type { AppointmentSource, Business, ClinicService, KnowledgeDocument, Pat
 import { buildAppointmentConfirmationEmail } from '@/lib/email/appointmentConfirmation'
 import { buildAppointmentStatusEmail } from '@/lib/email/appointmentStatus'
 import { sendEmail } from '@/lib/resend'
-import { createAppointment, cancelAppointment, confirmAppointment, getAvailableSlots, recordAppointmentPayment, rescheduleAppointment } from '@/services/appointments'
+import { createAppointment, cancelAppointment, confirmAppointment, getAppointmentById, getAvailableSlots, recordAppointmentPayment, rescheduleAppointment } from '@/services/appointments'
 import { createNotification } from '@/services/notifications'
 import { createSupportTicket } from '@/services/support'
 import { findOrCreatePatient, getPatientByEmail, searchPatients } from '@/services/patients'
@@ -81,11 +81,14 @@ export const clinicRealtimeTools: RealtimeToolDefinition[] = [
   {
     type: 'function',
     name: 'confirm_appointment',
-    description: 'Mark an appointment as confirmed.',
+    description:
+      'Mark an appointment as confirmed. Requires the phone number or email on file for that appointment to verify the caller.',
     parameters: {
       type: 'object',
       properties: {
         appointmentId: { type: 'string' },
+        patientEmail: { type: 'string', description: 'Email on file for the appointment, used to verify the caller.' },
+        patientPhone: { type: 'string', description: 'Phone number on file for the appointment, used to verify the caller.' },
       },
       required: ['appointmentId'],
       additionalProperties: false,
@@ -94,12 +97,15 @@ export const clinicRealtimeTools: RealtimeToolDefinition[] = [
   {
     type: 'function',
     name: 'reschedule_appointment',
-    description: 'Reschedule an appointment to a new time.',
+    description:
+      'Reschedule an appointment to a new time. Requires the phone number or email on file for that appointment to verify the caller.',
     parameters: {
       type: 'object',
       properties: {
         appointmentId: { type: 'string' },
         scheduledAt: { type: 'string' },
+        patientEmail: { type: 'string', description: 'Email on file for the appointment, used to verify the caller.' },
+        patientPhone: { type: 'string', description: 'Phone number on file for the appointment, used to verify the caller.' },
       },
       required: ['appointmentId', 'scheduledAt'],
       additionalProperties: false,
@@ -108,12 +114,15 @@ export const clinicRealtimeTools: RealtimeToolDefinition[] = [
   {
     type: 'function',
     name: 'cancel_appointment',
-    description: 'Cancel an appointment and store the reason.',
+    description:
+      'Cancel an appointment and store the reason. Requires the phone number or email on file for that appointment to verify the caller.',
     parameters: {
       type: 'object',
       properties: {
         appointmentId: { type: 'string' },
         reason: { type: 'string' },
+        patientEmail: { type: 'string', description: 'Email on file for the appointment, used to verify the caller.' },
+        patientPhone: { type: 'string', description: 'Phone number on file for the appointment, used to verify the caller.' },
       },
       required: ['appointmentId'],
       additionalProperties: false,
@@ -151,7 +160,8 @@ export const clinicRealtimeTools: RealtimeToolDefinition[] = [
   {
     type: 'function',
     name: 'record_payment',
-    description: 'Record a billing transaction and link it to an appointment if needed.',
+    description:
+      'Record a billing transaction and link it to an appointment if needed. Requires the phone number or email on file for that appointment to verify the caller.',
     parameters: {
       type: 'object',
       properties: {
@@ -162,6 +172,8 @@ export const clinicRealtimeTools: RealtimeToolDefinition[] = [
         chainId: { type: 'integer' },
         txHash: { type: 'string' },
         paymentType: { type: 'string' },
+        patientEmail: { type: 'string', description: 'Email on file for the appointment, used to verify the caller.' },
+        patientPhone: { type: 'string', description: 'Phone number on file for the appointment, used to verify the caller.' },
       },
       required: ['amount', 'currency', 'chainId', 'txHash'],
       additionalProperties: false,
@@ -205,6 +217,7 @@ export function buildClinicAssistantInstructions(opts: {
     `Be warm, concise, and calm. Do not diagnose or provide emergency medical advice.`,
     `Your job is to help patients book, reschedule, cancel, and understand clinic services.`,
     `Always ask for the minimum required patient details and confirm date and time in the clinic timezone.`,
+    `Before confirming, rescheduling, cancelling, or recording a payment on an EXISTING appointment, always ask the caller to state the phone number or email on file for that booking and pass it as patientEmail/patientPhone — this verifies you are speaking with the person who made the booking.`,
     `Clinic timezone: ${opts.timezone || opts.business.timezone || 'America/New_York'}.`,
     `Clinic services:\n${serviceList || '- No active services configured yet.'}`,
     `FAQs:\n${faqList || '- No FAQs configured yet.'}`,
@@ -234,6 +247,31 @@ export function buildRealtimeSessionPayload(opts: {
     modalities: ['text', 'audio'],
     language: opts.language || 'en',
     tools: clinicRealtimeTools,
+  }
+}
+
+// This endpoint is reachable directly (any browser with a businessSlug can
+// POST to /api/realtime/tools) and there's no server-tracked session tying a
+// tool call to the caller who found this appointmentId. Without this check,
+// anyone who learns an appointmentId (e.g. from a confirmation email) could
+// cancel/reschedule/confirm/pay for someone else's appointment. We require
+// the caller to state the email or phone on file, same as a clinic would
+// verify identity over the phone before touching an existing booking.
+function assertCallerMatchesPatient(patient: Patient | null, args: Record<string, unknown>) {
+  if (!patient) {
+    throw new Error('No patient is linked to this appointment yet, so identity cannot be verified.')
+  }
+
+  const providedEmail = typeof args.patientEmail === 'string' ? args.patientEmail.trim().toLowerCase() : ''
+  const providedPhone = typeof args.patientPhone === 'string' ? args.patientPhone.replace(/\D/g, '') : ''
+  const onFileEmail = (patient.email || '').trim().toLowerCase()
+  const onFilePhone = (patient.phone || '').replace(/\D/g, '')
+
+  const emailMatches = Boolean(providedEmail) && Boolean(onFileEmail) && providedEmail === onFileEmail
+  const phoneMatches = Boolean(providedPhone) && Boolean(onFilePhone) && providedPhone === onFilePhone
+
+  if (!emailMatches && !phoneMatches) {
+    throw new Error('Please confirm the phone number or email on file for this appointment before making changes.')
   }
 }
 
@@ -339,14 +377,23 @@ export async function executeRealtimeToolCall(
       return { appointment, patient }
     }
     case 'confirm_appointment': {
+      const existing = await getAppointmentById(supabase, businessId, String(args.appointmentId))
+      if (!existing) throw new Error('Appointment not found')
+      assertCallerMatchesPatient(existing.patient ?? null, args)
       const appointment = await confirmAppointment(supabase, businessId, String(args.appointmentId))
       return { appointment }
     }
     case 'reschedule_appointment': {
+      const existing = await getAppointmentById(supabase, businessId, String(args.appointmentId))
+      if (!existing) throw new Error('Appointment not found')
+      assertCallerMatchesPatient(existing.patient ?? null, args)
       const appointment = await rescheduleAppointment(supabase, businessId, String(args.appointmentId), String(args.scheduledAt))
       return { appointment }
     }
     case 'cancel_appointment': {
+      const existing = await getAppointmentById(supabase, businessId, String(args.appointmentId))
+      if (!existing) throw new Error('Appointment not found')
+      assertCallerMatchesPatient(existing.patient ?? null, args)
       const appointment = await cancelAppointment(supabase, businessId, String(args.appointmentId), typeof args.reason === 'string' ? args.reason : null)
       await sendAppointmentEmailForTool(supabase, appointment.id, 'status_update', typeof args.reason === 'string' ? args.reason : null)
       return { appointment }
@@ -365,6 +412,9 @@ export async function executeRealtimeToolCall(
       return { ticket }
     }
     case 'record_payment': {
+      const existing = await getAppointmentById(supabase, businessId, String(args.appointmentId || ''))
+      if (!existing) throw new Error('Appointment not found')
+      assertCallerMatchesPatient(existing.patient ?? null, args)
       return {
         payment: await recordAppointmentPayment(supabase, businessId, String(args.appointmentId || ''), {
           amount: Number(args.amount),

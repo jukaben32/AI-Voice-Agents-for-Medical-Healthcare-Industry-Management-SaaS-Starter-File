@@ -1,14 +1,29 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getServerSupabaseAndUser } from '@/lib/route-helpers'
 import { apiError, json, readJson } from '@/lib/api'
 import { portalRecordPaymentSchema } from '@/validations'
 import { getPublicBusinessProfile } from '@/services/business'
 import { getAppointmentPublic } from '@/services/appointments'
+import { getPatientById } from '@/services/patients'
 import { recordBillingTransaction } from '@/services/billing'
 import { recordAppointmentPayment } from '@/services/appointments'
 import { createNotification } from '@/services/notifications'
 import type { PublicBusinessProfile } from '@/types'
 
+// NOTE: this endpoint records a payment as CONFIRMED based on client-reported
+// data (amount/txHash/status) — it does not verify the transaction on-chain.
+// The auth/ownership check below stops one patient from confirming payment
+// for someone else's appointment, but a signed-in patient can still report a
+// fabricated txHash for their OWN appointment and have it marked paid. Real
+// protection requires server-side verification of the tx (receipt status,
+// token transfer amount/recipient) against an RPC provider before trusting
+// `status: 'confirmed'`. Flagged for follow-up once an RPC provider is chosen.
 export async function POST(request: Request) {
+  const { user } = await getServerSupabaseAndUser()
+  if (!user) {
+    return apiError('Unauthorized', 401)
+  }
+
   const url = new URL(request.url)
   const businessSlug = url.searchParams.get('businessSlug') || undefined
   const admin = createAdminClient()
@@ -28,9 +43,25 @@ export async function POST(request: Request) {
   let business: PublicBusinessProfile | null = businessSlug ? await getPublicBusinessProfile(admin, businessSlug) : null
   let appointment: Awaited<ReturnType<typeof getAppointmentPublic>> | null = null
 
-  if (!business && parsed.data.appointmentId) {
+  if (parsed.data.appointmentId) {
     appointment = await getAppointmentPublic(admin, parsed.data.appointmentId)
-    business = appointment?.business ?? null
+    if (!appointment) {
+      return apiError('Appointment not found', 404)
+    }
+    if (appointment.patient?.authUserId !== user.id) {
+      return apiError('Forbidden', 403)
+    }
+    business = appointment.business ?? business
+  } else if (parsed.data.patientId) {
+    if (!business) {
+      return apiError('Business not found', 404)
+    }
+    const patient = await getPatientById(admin, business.id, parsed.data.patientId)
+    if (!patient || patient.authUserId !== user.id) {
+      return apiError('Forbidden', 403)
+    }
+  } else {
+    return apiError('appointmentId or patientId is required', 422)
   }
 
   if (!business) {

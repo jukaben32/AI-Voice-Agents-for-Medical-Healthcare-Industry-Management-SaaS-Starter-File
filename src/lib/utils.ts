@@ -32,23 +32,39 @@ export function toTitleCase(value: string) {
     .join(' ')
 }
 
+// Crypto/stablecoin tickers this app deals with aren't valid ISO-4217 codes,
+// so `Intl.NumberFormat({ style: 'currency' })` throws for them at
+// construction time (verified: `new Intl.NumberFormat('en-US', { style:
+// 'currency', currency: 'USDC' })` throws `RangeError: Invalid currency
+// code`). USDC is this app's own default currency (see DEFAULT_CURRENCY),
+// so every price/payment amount hit this path. Handle known non-ISO tickers
+// explicitly instead of relying on a thrown-exception fallback.
+const NON_ISO_CURRENCY_SUFFIXES = new Set(['USDC', 'USDT', 'MATIC', 'ETH'])
+
+function formatPlainAmount(amount: number) {
+  const maximumFractionDigits = amount % 1 === 0 ? 0 : 2
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: maximumFractionDigits,
+    maximumFractionDigits,
+  }).format(amount)
+}
+
 export function formatCurrency(amount: number | null | undefined, currency = 'USD') {
   if (amount == null || Number.isNaN(amount)) return ''
+
+  const normalizedCurrency = currency.toUpperCase()
+  if (NON_ISO_CURRENCY_SUFFIXES.has(normalizedCurrency)) {
+    return `${formatPlainAmount(amount)} ${normalizedCurrency}`
+  }
+
   try {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency,
+      currency: normalizedCurrency,
       maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
     }).format(amount)
   } catch {
-    const formatted =
-      amount === 0
-        ? '0.00'
-        : new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
-            maximumFractionDigits: 2,
-          }).format(amount)
-    return `${formatted} ${currency}`
+    return `${formatPlainAmount(amount)} ${currency}`
   }
 }
 

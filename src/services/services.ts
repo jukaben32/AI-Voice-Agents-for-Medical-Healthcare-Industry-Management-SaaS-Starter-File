@@ -1,7 +1,7 @@
 import type { ClinicService } from '@/types'
 import type { DbClient } from './_shared'
 
-function toService(row: any): ClinicService {
+export function toService(row: any): ClinicService {
   return {
     id: row.id,
     businessId: row.business_id,

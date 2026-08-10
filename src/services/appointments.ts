@@ -25,6 +25,8 @@ import {
   zonedTimeToUtc,
 } from './_shared'
 import type { DbClient } from './_shared'
+import { toPatient } from './patients'
+import { toService } from './services'
 
 type AppointmentRow = any
 
@@ -63,8 +65,13 @@ function toAppointment(row: any): Appointment {
 function toRelation(row: AppointmentRow): AppointmentWithRelations {
   return {
     ...toAppointment(row),
-    patient: row.patients ?? null,
-    service: row.clinic_services ?? null,
+    // row.patients/row.clinic_services come back snake_case from Supabase;
+    // toPatient/toService convert them to the camelCase shape the rest of
+    // the app (AppointmentsManager, AppointmentDetailsDrawer, etc.) expects
+    // — without this, fields like insuranceProvider/dateOfBirth/
+    // durationMinutes were always undefined even though data existed.
+    patient: row.patients ? toPatient(row.patients) : null,
+    service: row.clinic_services ? toService(row.clinic_services) : null,
     agent: row.ai_agents ?? null,
   }
 }
