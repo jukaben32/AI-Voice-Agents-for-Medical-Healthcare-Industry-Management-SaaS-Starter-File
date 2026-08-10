@@ -1,7 +1,7 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export type RealtimeVoiceStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error' | 'listening' | 'thinking' | 'speaking'
+export type RealtimeVoiceStatus = 'idle' | 'initializing' | 'connecting' | 'connected' | 'listening' | 'thinking' | 'speaking' | 'disconnected' | 'error'
 
 export interface RealtimeMessage {
   id: string
