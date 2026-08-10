@@ -287,7 +287,13 @@ function createWidgetPreviewStage({
         }}
       />
 
-      <div className="relative h-full p-4">
+      {/* `absolute inset-0` instead of `h-full`: the outer stage only sets
+          minHeight (no explicit height), and height:100% doesn't resolve
+          against an auto-height parent - it was collapsing this layer down
+          to its static content's height, which pulled the bottom-anchored
+          launcher button and panel up near the top of the visually taller
+          outer box instead of to its actual bottom edge. */}
+      <div className="absolute inset-0 p-4">
         <div className="absolute left-4 top-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-current/48">
           Your website here
         </div>
