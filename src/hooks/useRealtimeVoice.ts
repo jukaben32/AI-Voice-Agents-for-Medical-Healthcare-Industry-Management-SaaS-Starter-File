@@ -304,7 +304,8 @@ export function useRealtimeVoice() {
           }),
         })
         if (!sdpResponse.ok) {
-          throw new Error(`Realtime connection failed (${sdpResponse.status})`)
+          const body = await sdpResponse.json().catch(() => null)
+          throw new Error(body?.error || `Realtime connection failed (${sdpResponse.status})`)
         }
         const { sdpAnswer } = await sdpResponse.json()
         await pc.setRemoteDescription({ type: 'answer', sdp: sdpAnswer })
