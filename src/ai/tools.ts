@@ -1,6 +1,7 @@
-import type { AppointmentSource, Business, ClinicService, KnowledgeDocument, Patient } from '@/types'
+import type { AppointmentSource, AppointmentWithRelations, Business, ClinicService, KnowledgeDocument, Patient } from '@/types'
 import { buildAppointmentConfirmationEmail } from '@/lib/email/appointmentConfirmation'
 import { buildAppointmentStatusEmail } from '@/lib/email/appointmentStatus'
+import { buildBusinessAppointmentEmail } from '@/lib/email/businessNotification'
 import { sendEmail } from '@/lib/resend'
 import { createAppointment, cancelAppointment, confirmAppointment, getAppointmentById, getAvailableSlots, recordAppointmentPayment, rescheduleAppointment } from '@/services/appointments'
 import { createNotification } from '@/services/notifications'
@@ -341,6 +342,57 @@ async function sendAppointmentEmailForTool(supabase: DbClient, appointmentId: st
   })
 }
 
+// The AI voice agent books/cancels/reschedules appointments on the
+// business's behalf same as a patient would through the portal, but until
+// now staff only found out by opening the dashboard. Mirrors the
+// patient/reschedule/cancel routes: email the clinic's booking address and
+// drop a dashboard notification so voice-driven changes show up the same
+// way portal-driven ones do.
+async function notifyBusinessOfAppointmentEvent(
+  supabase: DbClient,
+  businessId: string,
+  appointment: AppointmentWithRelations,
+  event: 'booked' | 'cancelled' | 'reschedule_requested',
+  reason?: string | null
+) {
+  const business = await getBusinessById(supabase, businessId)
+  const patient = appointment.patient
+  if (!business || !patient) return
+
+  const serviceName = appointment.service?.name || 'Appointment'
+  const scheduledAtLabel = new Date(appointment.scheduledAt).toLocaleString('en-US')
+
+  await Promise.all([
+    business.bookingEmail
+      ? sendEmail({
+          to: business.bookingEmail,
+          subject: `${event === 'booked' ? 'New appointment' : event === 'cancelled' ? 'Appointment cancelled' : 'Reschedule requested'} - ${patient.name}`,
+          html: buildBusinessAppointmentEmail({
+            businessName: business.name,
+            patientName: patient.name,
+            patientPhone: patient.phone,
+            patientEmail: patient.email,
+            serviceName,
+            scheduledAt: scheduledAtLabel,
+            event,
+            reason: reason ?? null,
+          }),
+        })
+      : Promise.resolve(),
+    createNotification(supabase, businessId, {
+      category: 'appointment',
+      title:
+        event === 'booked'
+          ? 'Appointment booked by AI agent'
+          : event === 'cancelled'
+            ? 'Appointment cancelled by AI agent'
+            : 'Reschedule requested by AI agent',
+      message: `${patient.name}'s ${serviceName} appointment was ${event === 'booked' ? 'booked' : event === 'cancelled' ? 'cancelled' : 'moved to ' + scheduledAtLabel} via the voice assistant.`,
+      data: { appointmentId: appointment.id },
+    }),
+  ])
+}
+
 export async function executeRealtimeToolCall(
   supabase: DbClient,
   businessId: string,
@@ -392,6 +444,7 @@ export async function executeRealtimeToolCall(
       if ((patient?.email || typeof args.patientEmail === 'string') && appointment.id) {
         await sendAppointmentEmailForTool(supabase, appointment.id, 'confirmation')
       }
+      await notifyBusinessOfAppointmentEvent(supabase, businessId, appointment, 'booked')
       return { appointment, patient }
     }
     case 'confirm_appointment': {
@@ -406,6 +459,7 @@ export async function executeRealtimeToolCall(
       if (!existing) throw new Error('Appointment not found')
       assertCallerMatchesPatient(existing.patient ?? null, args)
       const appointment = await rescheduleAppointment(supabase, businessId, String(args.appointmentId), String(args.scheduledAt))
+      await notifyBusinessOfAppointmentEvent(supabase, businessId, appointment, 'reschedule_requested')
       return { appointment }
     }
     case 'cancel_appointment': {
@@ -414,6 +468,7 @@ export async function executeRealtimeToolCall(
       assertCallerMatchesPatient(existing.patient ?? null, args)
       const appointment = await cancelAppointment(supabase, businessId, String(args.appointmentId), typeof args.reason === 'string' ? args.reason : null)
       await sendAppointmentEmailForTool(supabase, appointment.id, 'status_update', typeof args.reason === 'string' ? args.reason : null)
+      await notifyBusinessOfAppointmentEvent(supabase, businessId, appointment, 'cancelled', typeof args.reason === 'string' ? args.reason : null)
       return { appointment }
     }
     case 'search_faqs': {
