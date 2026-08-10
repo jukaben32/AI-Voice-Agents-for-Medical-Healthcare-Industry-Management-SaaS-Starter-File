@@ -65,7 +65,7 @@ export function useRealtimeVoice() {
   const partialAgentTextRef = useRef<Record<string, string>>({})
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
-  const processorRef = useRef<ScriptProcessorNode | null>(null)
+  const amplitudeFrameRef = useRef<number | null>(null)
   const onToolCallRef = useRef<RealtimeConnectOptions['onToolCall']>(undefined)
 
   const appendMessage = useCallback((role: RealtimeMessage['role'], content: string) => {
@@ -88,13 +88,14 @@ export function useRealtimeVoice() {
       audioElRef.current = null
     }
     partialAgentTextRef.current = {}
-    if (processorRef.current && analyserRef.current && audioContextRef.current) {
-      processorRef.current.disconnect()
-      analyserRef.current = null
-      processorRef.current = null
+    if (amplitudeFrameRef.current !== null) {
+      cancelAnimationFrame(amplitudeFrameRef.current)
+      amplitudeFrameRef.current = null
     }
+    analyserRef.current = null
     audioContextRef.current?.close()
     audioContextRef.current = null
+    setAmplitude(0)
   }, [])
 
   useEffect(() => cleanup, [cleanup])
@@ -121,11 +122,12 @@ export function useRealtimeVoice() {
   }, [])
 
   const handleServerEvent = useCallback(
-    (event: RealtimeServerEvent, opts: RealtimeConnectOptions) => {
+    (event: RealtimeServerEvent) => {
       switch (event.type) {
         case 'response.audio_transcript.delta': {
           const key = event.item_id || event.response_id || 'agent'
           partialAgentTextRef.current[key] = (partialAgentTextRef.current[key] || '') + (event.delta || '')
+          setStatus('speaking')
           break
         }
         case 'response.audio_transcript.done': {
@@ -135,8 +137,21 @@ export function useRealtimeVoice() {
           appendMessage('agent', text)
           break
         }
+        case 'input_audio_buffer.speech_started': {
+          setStatus('listening')
+          setTranscript('')
+          break
+        }
         case 'conversation.item.input_audio_transcription.completed': {
           appendMessage('caller', event.transcript || '')
+          break
+        }
+        case 'response.in_progress': {
+          setStatus('thinking')
+          break
+        }
+        case 'response.done': {
+          setStatus('listening')
           break
         }
         case 'response.function_call_arguments.done': {
@@ -148,10 +163,11 @@ export function useRealtimeVoice() {
           } catch {
             args = {}
           }
+          setStatus('thinking')
           void (async () => {
             try {
-              const result = onToolCallRef.current ? await onToolCallRef.current(toolName, args) : await opts.onToolCall?.(toolName, args) ?? { ok: true }
-              sendToolResult(callId, result ?? { ok: true })
+              const result = onToolCallRef.current ? await onToolCallRef.current(toolName, args) : { ok: true }
+              sendToolResult(callId, (result as Record<string, unknown>) ?? { ok: true })
             } catch (toolError) {
               sendToolResult(callId, { error: toolError instanceof Error ? toolError.message : 'Tool call failed' })
             }
@@ -160,7 +176,6 @@ export function useRealtimeVoice() {
         }
         case 'error': {
           setError(event.error?.message || 'Realtime error')
-          setStatus('error')
           break
         }
         default:
@@ -169,6 +184,30 @@ export function useRealtimeVoice() {
     },
     [appendMessage, sendToolResult]
   )
+
+  // Live amplitude readout for the waveform UI, fed from the same mic stream
+  // that's already flowing to OpenAI over the WebRTC track below - this only
+  // reads the signal, it never sends anything.
+  function startAmplitudeMeter(stream: MediaStream) {
+    const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const ctx = new AudioContextCtor()
+    audioContextRef.current = ctx
+    const source = ctx.createMediaStreamSource(stream)
+    const analyser = ctx.createAnalyser()
+    analyser.fftSize = 256
+    source.connect(analyser)
+    analyserRef.current = analyser
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount)
+    const tick = () => {
+      if (!analyserRef.current) return
+      analyserRef.current.getByteFrequencyData(dataArray)
+      const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
+      setAmplitude(avg / 255)
+      amplitudeFrameRef.current = requestAnimationFrame(tick)
+    }
+    tick()
+  }
 
   const connect = useCallback(
     async (opts: RealtimeConnectOptions) => {
@@ -180,95 +219,95 @@ export function useRealtimeVoice() {
       setStatus('connecting')
 
       try {
-      const sessionResponse = await fetch('/api/realtime/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessSlug: opts.businessSlug,
-          widgetSlug: opts.widgetSlug ?? undefined,
-          voice: opts.voice ?? undefined,
-          language: opts.language ?? undefined,
-        }),
-      })
-      if (!sessionResponse.ok) {
-        throw new Error(await sessionResponse.text())
-      }
-      const sessionData: VoiceSessionPayload = await sessionResponse.json()
-      setSession(sessionData)
-
-      const model = sessionData.session?.model || 'gpt-realtime'
-
-      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      micStreamRef.current = micStream
-
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-      })
-      pcRef.current = pc
-
-      const audioEl = document.createElement('audio')
-      audioEl.autoplay = true
-      audioElRef.current = audioEl
-
-      pc.ontrack = (event) => {
-        audioEl.srcObject = event.streams[0]
-      }
-
-      micStream.getTracks().forEach((track) => pc.addTrack(track, micStream))
-
-      const dc = pc.createDataChannel('oai')
-      dcRef.current = dc
-      dc.onmessage = (event) => {
-        try {
-          handleServerEvent(JSON.parse(event.data), opts)
-        } catch {
-          // Ignore malformed/unrecognized events rather than tearing down the call.
+        const sessionResponse = await fetch('/api/realtime/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessSlug: opts.businessSlug,
+            widgetSlug: opts.widgetSlug ?? undefined,
+            voice: opts.voice ?? undefined,
+            language: opts.language ?? undefined,
+          }),
+        })
+        if (!sessionResponse.ok) {
+          throw new Error(await sessionResponse.text())
         }
-      }
-      dc.onopen = () => {
-        dc.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            model,
-            voice: opts.voice || 'alloy',
-            instructions: sessionData.instructions,
-            input_audio_format: 'pcm16',
-            output_audio_format: 'pcm16',
-            input_audio_transcription: { model: 'whisper-1' },
-            tools: sessionData.tools || [],
-            turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
-          },
-        }))
-        setStatus('listening')
-      }
+        const sessionData: VoiceSessionPayload = await sessionResponse.json()
+        setSession(sessionData)
 
-      // Add audio transceiver so the SDP offer includes an audio m-line for
-      // OpenAI to attach its response track to.
-      pc.addTransceiver('audio', { direction: 'sendrecv' })
+        const model = sessionData.session?.model || 'gpt-realtime'
 
-      const offer = await pc.createOffer()
-      await pc.setLocalDescription(offer)
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        micStreamRef.current = micStream
+        startAmplitudeMeter(micStream)
 
-      // SDP exchange via server-side proxy (keeps OpenAI API key secure)
-      const sdpResponse = await fetch('/api/realtime/sdp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessSlug: opts.businessSlug,
-          widgetSlug: opts.widgetSlug ?? null,
-          language: opts.language ?? 'en',
-          sdp: offer.sdp,
-        }),
-      })
-      if (!sdpResponse.ok) {
-        throw new Error(`Realtime connection failed (${sdpResponse.status})`)
-      }
-      const { sdpAnswer } = await sdpResponse.json()
-      await pc.setRemoteDescription({ type: 'answer', sdp: sdpAnswer })
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        })
+        pcRef.current = pc
 
-      setStatus('connected')
-      setStatus('listening')
-      startMicCapture()
+        const audioEl = document.createElement('audio')
+        audioEl.autoplay = true
+        audioElRef.current = audioEl
+        pc.ontrack = (event) => {
+          audioEl.srcObject = event.streams[0]
+        }
+
+        // A single sendrecv audio transceiver: addTrack() below negotiates
+        // the outbound (mic) side, and OpenAI attaches its spoken-response
+        // track to the same m-line, which fires ontrack above. Adding a
+        // second transceiver here would produce a duplicate m=audio section
+        // in the SDP offer, which OpenAI's realtime endpoint does not expect.
+        micStream.getTracks().forEach((track) => pc.addTrack(track, micStream))
+
+        const dc = pc.createDataChannel('oai-events')
+        dcRef.current = dc
+        dc.onmessage = (event) => {
+          try {
+            handleServerEvent(JSON.parse(event.data))
+          } catch {
+            // Ignore malformed/unrecognized events rather than tearing down the call.
+          }
+        }
+        dc.onopen = () => {
+          dc.send(
+            JSON.stringify({
+              type: 'session.update',
+              session: {
+                model,
+                voice: opts.voice || 'alloy',
+                instructions: sessionData.instructions,
+                input_audio_format: 'pcm16',
+                output_audio_format: 'pcm16',
+                input_audio_transcription: { model: 'whisper-1' },
+                tools: sessionData.tools || [],
+                tool_choice: 'auto',
+                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 },
+              },
+            })
+          )
+          setStatus('listening')
+        }
+
+        const offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+
+        // SDP exchange via server-side proxy (keeps OPENAI_API_KEY on the server)
+        const sdpResponse = await fetch('/api/realtime/sdp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessSlug: opts.businessSlug,
+            widgetSlug: opts.widgetSlug ?? null,
+            language: opts.language ?? 'en',
+            sdp: offer.sdp,
+          }),
+        })
+        if (!sdpResponse.ok) {
+          throw new Error(`Realtime connection failed (${sdpResponse.status})`)
+        }
+        const { sdpAnswer } = await sdpResponse.json()
+        await pc.setRemoteDescription({ type: 'answer', sdp: sdpAnswer })
       } catch (err) {
         cleanup()
         const message = err instanceof Error ? err.message : 'Failed to start voice call'
@@ -280,57 +319,19 @@ export function useRealtimeVoice() {
     [cleanup, handleServerEvent]
   )
 
-  function startMicCapture() {
-    if (!micStreamRef.current || !audioContextRef.current) return
-    const ctx = audioContextRef.current
-    const source = ctx.createMediaStreamSource(micStreamRef.current)
-    const analyser = ctx.createAnalyser()
-    analyser.fftSize = 256
-    source.connect(analyser)
-    analyserRef.current = analyser
-    const dataArray = new Uint8Array(analyser.frequencyBinCount)
-    const onAmplitude = () => {
-      if (!analyserRef.current) return
-      analyserRef.current.getByteFrequencyData(dataArray)
-      const avg = dataArray.reduce((a, b) => a + b) / dataArray.length
-      setAmplitude(avg / 255)
-      requestAnimationFrame(onAmplitude)
-    }
-    onAmplitude()
-    const processor = ctx.createScriptProcessor(8000, 1, 1)
-    processorRef.current = processor
-    source.connect(processor)
-    processor.connect(ctx.destination)
-    processor.onaudioprocess = (event) => {
-      if (dcRef.current?.readyState === 'open') {
-        const input = event.inputBuffer.getChannelData(0)
-        const int16 = floatTo16(input)
-        const base64Audio = arrayBufferToBase64(int16.buffer as ArrayBuffer)
-        dcRef.current.send(JSON.stringify({
-          type: 'input_audio_buffer.append',
-          audio: base64Audio,
-        }))
-      }
-    }
-  }
-
+  // The mic track streams continuously over WebRTC once connected; these two
+  // just mute/unmute it rather than starting a second capture pipeline.
   const startListening = useCallback(async () => {
-    if (!session) return
+    micStreamRef.current?.getTracks().forEach((track) => {
+      track.enabled = true
+    })
     setStatus('listening')
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 })
-      audioContextRef.current = audioContext
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Mic access failed')
-      setStatus('error')
-    }
-  }, [session])
+  }, [])
 
   const stopListening = useCallback(() => {
-    if (dcRef.current?.readyState === 'open') {
-      dcRef.current.send(JSON.stringify({ type: 'input_audio_buffer.commit' }))
-    }
-    setStatus('listening')
+    micStreamRef.current?.getTracks().forEach((track) => {
+      track.enabled = false
+    })
   }, [])
 
   return {
@@ -347,24 +348,6 @@ export function useRealtimeVoice() {
     sendToolResult,
     reset: disconnect,
   }
-}
-
-// Audio utilities
-function floatTo16(input: Float32Array): Int16Array {
-  const output = new Int16Array(input.length)
-  for (let i = 0; i < input.length; i++) {
-    output[i] = Math.max(-1, Math.min(1, input[i])) * 0x7fff
-  }
-  return output
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = ''
-  const bytes = new Uint8Array(buffer)
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i])
-  }
-  return btoa(binary)
 }
 
 export default useRealtimeVoice
