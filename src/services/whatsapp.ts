@@ -15,6 +15,15 @@ export async function getWhatsappConnection(supabase: DbClient, businessId: stri
   return data ?? null
 }
 
+// instance_token is the Evolution API credential for this connection AND the
+// webhook shared secret (see the ?token= check in the webhook route) - it
+// must never reach the browser. Every API route that sends a connection to
+// the client should pass it through this first.
+export function toPublicWhatsappConnection(connection: WhatsappConnection): Omit<WhatsappConnection, 'instance_token'> {
+  const { instance_token: _instance_token, ...rest } = connection
+  return rest
+}
+
 function buildInstanceName(businessId: string) {
   return `clara-medical-${businessId}`
 }

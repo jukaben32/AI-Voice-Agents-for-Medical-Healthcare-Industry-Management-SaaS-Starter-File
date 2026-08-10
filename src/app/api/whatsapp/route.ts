@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { apiError, json, readJson } from '@/lib/api'
 import { getBusinessForCurrentUser, getServerSupabaseAndUser } from '@/lib/route-helpers'
-import { getWhatsappConnection, refreshWhatsappStatus, updateWhatsappConnection } from '@/services/whatsapp'
+import { getWhatsappConnection, refreshWhatsappStatus, toPublicWhatsappConnection, updateWhatsappConnection } from '@/services/whatsapp'
 
 const updateSchema = z.object({
   agentId: z.string().uuid().nullable().optional(),
@@ -29,7 +29,7 @@ export async function GET() {
     }
   }
 
-  return json({ connection })
+  return json({ connection: connection ? toPublicWhatsappConnection(connection) : null })
 }
 
 export async function PATCH(request: Request) {
@@ -60,7 +60,7 @@ export async function PATCH(request: Request) {
       agentId: parsed.data.agentId ?? undefined,
       isEnabled: parsed.data.isEnabled,
     })
-    return json({ connection })
+    return json({ connection: toPublicWhatsappConnection(connection) })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Could not update WhatsApp connection'
     return apiError(message, 400)

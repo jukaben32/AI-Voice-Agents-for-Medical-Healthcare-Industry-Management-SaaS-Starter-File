@@ -6,6 +6,10 @@ import { MessageCircle, Power, QrCode, ServerCrash, ShieldCheck, Sparkles } from
 import type { AiAgent, WhatsappConnection } from '@/types'
 import { StatusBadge, SurfaceCard } from '@/components/clinic/shared'
 
+// The API never sends instance_token to the browser (it's the Evolution API
+// credential and webhook secret) - see toPublicWhatsappConnection.
+type PublicWhatsappConnection = Omit<WhatsappConnection, 'instance_token'>
+
 const STATUS_LABEL: Record<WhatsappConnection['status'], string> = {
   connected: 'Connected',
   connecting: 'Connecting...',
@@ -37,7 +41,7 @@ export function WhatsappManager({
   initialConnection,
   agents,
 }: {
-  initialConnection: WhatsappConnection | null
+  initialConnection: PublicWhatsappConnection | null
   agents: AiAgent[]
 }) {
   const [connection, setConnection] = useState(initialConnection)

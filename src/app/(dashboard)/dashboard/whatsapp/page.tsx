@@ -3,7 +3,7 @@ import { CalendarDays, MessageCircle, ShieldCheck, Sparkles } from 'lucide-react
 
 import { createClient } from '@/lib/supabase/server'
 import { getBusinessForUser } from '@/services/business'
-import { getWhatsappConnection } from '@/services/whatsapp'
+import { getWhatsappConnection, toPublicWhatsappConnection } from '@/services/whatsapp'
 import { listAgentsForBusiness } from '@/services/agents'
 import { WhatsappManager } from '@/components/clinic/WhatsappManager'
 import { SectionEyebrow, SectionHeading, StatusBadge, SurfaceCard } from '@/components/clinic/shared'
@@ -38,7 +38,7 @@ export default async function WhatsappPage() {
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)]">
-        <WhatsappManager initialConnection={connection} agents={agents} />
+        <WhatsappManager initialConnection={connection ? toPublicWhatsappConnection(connection) : null} agents={agents} />
 
         <SurfaceCard className="p-6 lg:p-7">
           <div className="flex items-start justify-between gap-3">
